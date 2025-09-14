@@ -1,0 +1,82 @@
+@use "styles/theme/theme.variables" as *;
+@use "styles/material-ui/material-ui.style" as *;
+
+:host {
+  width: 100%;
+  padding: 1px; //fix for losing outline issue
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+
+  &:has(.material-symbols-outlined) {
+    padding-left: 12px;
+  }
+
+  &:hover:not(:focus-within) {
+    border-color: $border-hover-color;
+  }
+
+  &:focus-within {
+    border-color: $tint-color;
+    outline: none;
+  }
+}
+
+.form-input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: Nunito;
+
+  &.extra-small {
+    padding: 8px 12px;
+  }
+
+  &.small {
+    padding: 10px 12px;
+  }
+
+  &::placeholder {
+    color: $text-secondary-color;
+  }
+
+  &.invalid {
+    border-color: $error-color;
+  }
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.error-message {
+  color: $error-color;
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 4px;
+}

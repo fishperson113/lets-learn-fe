@@ -1,0 +1,22 @@
+<div class="left-header">
+  <span class="material-symbols-outlined" (click)="onMenuClick()"> menu </span>
+  <app-breadcrumb [items]="breadcrumbItems" />
+</div>
+<div class="right-header">
+  <span class="material-symbols-outlined" (click)="onCreateCourse()">
+    add_circle
+  </span>
+  <span class="material-symbols-outlined"> chat_bubble </span>
+  <app-popover
+    [isOpen]="showAccountPopover"
+    (openChange)="onAccoutPopoverVisibleChange($event)"
+  >
+    <circle-image
+      class="avatar"
+      defaultImage="account_circle"
+      [src]="currentUser?.avatar || null"
+      trigger
+    ></circle-image>
+    <account-popover content (close)="onAccoutPopoverVisibleChange(false)" />
+  </app-popover>
+</div>

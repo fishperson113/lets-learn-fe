@@ -1,0 +1,32 @@
+<span
+  [class]="{
+  'material-symbols-outlined': true, 
+  'change-on-hover': true,
+  'quiz': topic.type === 'quiz',
+  'assignment': topic.type === 'assignment',
+  'link': topic.type === 'link',
+  'file': topic.type === 'file',
+  'page': topic.type === 'page',
+}"
+>
+  {{ topicIcon }}
+</span>
+<div class="topic-content">
+  <div class="topic-name" (click)="onTopicClick()">
+    <h3 class="topic-name-text">{{ topic.title }}</h3>
+  </div>
+  <div class="topic-description">
+    <p>
+      {{ topic.data ? topic.data.description : "" }}
+    </p>
+  </div>
+</div>
+
+@if(isEditing){
+<div class="action-buttons">
+  <span class="material-symbols-outlined trash" (click)="onDelete()">
+    delete
+  </span>
+  <span class="material-symbols-outlined default"> unfold_more </span>
+</div>
+}

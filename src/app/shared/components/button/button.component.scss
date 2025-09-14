@@ -1,0 +1,108 @@
+@use "styles/theme/theme.variables" as *;
+@use "styles/material-ui/material-ui.style" as *;
+
+button {
+  --width: 100%;
+  width: var(--width);
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: Nunito;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transform-origin: center;
+
+  &.primary {
+    background-color: $tint-color;
+    color: white;
+  }
+  &.secondary {
+    background-color: $background-secondary-color;
+    color: $text-secondary-color;
+    border: 1px solid $border-color;
+  }
+  &.warning {
+    background-color: $warning-color;
+    color: white;
+  }
+  &.ghost {
+    background-color: #f3f4f6;
+    color: #6b7280;
+  }
+
+  &.gradient {
+    color: white;
+    padding: 8px 16px;
+    &.blue {
+      background: linear-gradient(
+        to bottom right,
+        $gradient-blue-1,
+        $gradient-blue-2
+      );
+    }
+    &.green {
+      background: linear-gradient(
+        to bottom right,
+        $gradient-green-1,
+        $gradient-green-2
+      );
+    }
+    &.red {
+      background: linear-gradient(
+        to bottom right,
+        $gradient-red-1,
+        $gradient-red-2
+      );
+    }
+    &.yellow {
+      background: linear-gradient(
+        to bottom right,
+        $gradient-yellow-1,
+        $gradient-yellow-2
+      );
+    }
+  }
+  &.outline {
+    &.blue {
+      border: 1px solid $outline-blue;
+      color: $outline-blue;
+      background-color: transparent;
+
+      &:hover {
+        background-color: $outline-blue-hover;
+        transform: scale(1);
+      }
+    }
+  }
+
+  &:hover {
+    transform: scale(1.02);
+    ::ng-deep {
+      & .material-symbols-outlined {
+        font-variation-settings: $google-icon-hover-setting;
+      }
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+
+    &.primary {
+      background-color: rgba($color: $tint-color, $alpha: 0.8);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

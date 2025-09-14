@@ -1,0 +1,152 @@
+@use "styles/theme/theme.variables" as *;
+
+:host {
+  width: 100%;
+}
+
+.file-upload-container {
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 24px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: $border-hover-color;
+  }
+
+  &.dragging {
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+}
+
+.file-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  span.file-upload-icon {
+    color: $tint-color;
+    font-size: 32px;
+  }
+}
+
+.upload-text {
+  text-align: center;
+}
+
+.upload-title {
+  color: $tint-color;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.upload-description {
+  color: $text-secondary-color;
+  font-weight: 400;
+}
+
+.attach-button {
+  span.material-symbols-outlined {
+    font-size: 16px;
+  }
+}
+
+.upload-progress {
+  margin-top: 16px;
+  &.hidden {
+    transition: all 1s ease;
+  }
+}
+
+.progress-bar {
+  height: 4px;
+  background-color: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.3s ease;
+  &.green {
+    background-color: #10b981;
+  }
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+  text-align: center;
+}
+
+.uploaded-files {
+  width: 100%;
+  .file-list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+
+    a {
+      all: unset;
+    }
+
+    .file-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      list-style-type: disc;
+
+      &:hover {
+        .file-actions {
+          opacity: 1;
+          pointer-events: auto;
+        }
+      }
+
+      .file-name {
+        color: $text-secondary-color;
+        cursor: pointer;
+        font-weight: 600;
+        &:hover {
+          text-decoration: underline;
+          text-decoration-color: $text-secondary-color;
+          text-decoration-thickness: 1px;
+          text-underline-offset: 2px;
+        }
+      }
+      .file-actions {
+        &.deleting {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        opacity: 0;
+        pointer-events: none;
+
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        a.download-link {
+          display: flex;
+          align-items: center;
+        }
+        span.material-symbols-outlined {
+          &.tint-secondary {
+            color: $tint-secondary-color;
+          }
+          &.error-color {
+            color: $error-color;
+          }
+        }
+      }
+    }
+  }
+}

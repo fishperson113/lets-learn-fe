@@ -1,0 +1,101 @@
+@use "styles/theme/theme.variables" as *;
+
+.container {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  cursor: pointer;
+  color: $text-secondary-color;
+  font-weight: 500;
+  padding: 12px 24px;
+  background-color: #faf9fd;
+  transition: padding 0.4s ease-in-out;
+  user-select: none;
+
+  &.has-description {
+    align-items: center;
+    padding: 12px 18px;
+    &.collapsed {
+      padding: 12px 5.5px;
+    }
+    label {
+      font-weight: 600;
+    }
+  }
+
+  &:not(.list-item) {
+    border-radius: 12px;
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+      0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  }
+
+  &:hover,
+  &.selected {
+    background-color: #e8e7eb;
+    ::ng-deep {
+      .material-symbols-outlined {
+        --icon-hover-setting: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 48;
+        font-variation-settings: var(--icon-hover-setting);
+      }
+      img {
+        outline: 3px solid $tint-color;
+      }
+      label {
+        font-weight: 600;
+      }
+    }
+  }
+
+  &:active {
+    background-color: #e8e7eb;
+    ::ng-deep {
+      .material-symbols-outlined {
+        --icon-active-setting: "FILL" 1, "wght" 100, "GRAD" 0, "opsz" 48;
+        font-variation-settings: var(--icon-active-setting);
+      }
+      img {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  &.item {
+    box-shadow: none;
+  }
+
+  &.collapsed {
+    padding: 12px;
+  }
+}
+
+.content {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+}
+
+.description {
+  color: $text-secondary-color;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: Nunito;
+
+  width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+ng-content {
+  --icon-color: $icon-color;
+}
+
+label {
+  cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 100%;
+  font-family: Nunito;
+}

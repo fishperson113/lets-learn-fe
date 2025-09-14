@@ -1,0 +1,29 @@
+@use "styles/theme/theme.variables" as *;
+
+:host {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px $border-color solid;
+}
+
+span.material-symbols-outlined {
+  color: $icon-color;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  ::ng-deep .image-container {
+    --icon-size: 40px;
+  }
+}
+
+.left-header,
+.right-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}

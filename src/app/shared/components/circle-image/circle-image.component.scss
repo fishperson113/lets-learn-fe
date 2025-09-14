@@ -1,0 +1,49 @@
+@use "styles/theme/theme.variables" as *;
+
+:host {
+  --width: 36px;
+  --height: 36px;
+  width: var(--width);
+  height: var(--height);
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-container {
+  --icon-size: 24px;
+  width: 100%;
+  height: 100%;
+  box-shadow: $box-shadow;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  & span {
+    color: $icon-color;
+    font-size: var(--icon-size);
+  }
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: $box-shadow;
+
+  outline: 0px solid transparent;
+  transition: outline 0.1s ease-in-out, transform 0.1s ease-in-out;
+
+  &:hover {
+    outline: 3px solid $tint-color;
+  }
+  &:active {
+    transform: scale(0.95);
+  }
+}

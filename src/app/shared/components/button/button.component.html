@@ -1,0 +1,25 @@
+<button
+  [type]="type"
+  [class]="{
+  primary: variant === 'primary',
+  secondary: variant === 'secondary',
+  warning: variant === 'warning',
+  ghost: variant === 'ghost',
+  gradient: variant.includes('gradient'),
+  blue: variant.includes('blue'),
+  green: variant.includes('green'),
+  yellow: variant.includes('yellow'),
+  red: variant.includes('red'),
+  outline: variant.includes('outline'),
+}"
+  (click)="handleClick()"
+  [disabled]="loading"
+>
+  @if(loading) {
+  <!-- Go to https://loading.io/ for more loading style-->
+  <img src="svgs/loading-24px.svg" alt="Loading..." />
+  } @else {
+  <ng-content select="[icon]"></ng-content>
+  {{ label }}
+  }
+</button>
