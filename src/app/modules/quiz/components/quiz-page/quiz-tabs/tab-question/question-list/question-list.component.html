@@ -1,0 +1,9 @@
+<div cdkDropList class="container" (cdkDropListDropped)="drop($event)">
+  @for(question of questions; track question.id) {
+  <question-item
+    [question]="question"
+    [index]="questionIndexMap[question.id]"
+    cdkDrag
+  />
+  }
+</div>

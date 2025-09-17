@@ -1,0 +1,30 @@
+<card>
+  <div class="quiz-dates">
+    <div class="date-item">
+      <span class="date-label">Open:</span>
+      <span class="date-value">{{
+        formatDate(topic.data.open, "EEEE, dd MMMM yyyy HH:mm a")
+      }}</span>
+    </div>
+    <div class="date-item">
+      <span class="date-label">Due:</span>
+      <span class="date-value">{{
+        formatDate(topic.data.close, "EEEE, dd MMMM yyyy HH:mm a")
+      }}</span>
+    </div>
+  </div>
+
+  <div class="quiz-description">
+    <p>{{ topic.data.description }}</p>
+  </div>
+</card>
+
+<card>
+  <div class="comments-header">
+    <span class="material-symbols-outlined"> group </span>
+    <h3>Class comments</h3>
+  </div>
+
+  <comment-list />
+  <comment-input />
+</card>

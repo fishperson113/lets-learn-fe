@@ -1,0 +1,63 @@
+<card>
+  <div class="topic-dates">
+    <div class="date-item">
+      <span class="date-label">Open:</span>
+      <span class="date-value">{{
+        formatDate(topic.data.open, "EEEE, dd MMMM yyyy HH:mm a")
+      }}</span>
+    </div>
+    <div class="date-item">
+      <span class="date-label">Due:</span>
+      <span class="date-value">{{
+        formatDate(topic.data.open, "EEEE, dd MMMM yyyy HH:mm a")
+      }}</span>
+    </div>
+  </div>
+
+  <div class="topic-description">
+    <p>{{ topic.data.description }}</p>
+  </div>
+
+  <div class="actions">
+    <app-button
+      label="Add submission"
+      class="action-button"
+      (onClick)="openExplorer()"
+      *ngIf="!studentResponse"
+    />
+    <app-button
+      label="Remove submission"
+      class="action-button"
+      (onClick)="onRemoveSubmission()"
+      *ngIf="!!studentResponse"
+    />
+
+    <input
+      #fileInput
+      type="file"
+      hidden
+      [accept]="acceptedFileTypes"
+      multiple
+      (change)="onSelectedFile($event)"
+    />
+  </div>
+
+  <div class="attempts-section">
+    <h3 class="attempts-title">Your attempts</h3>
+
+    <submission-status-table
+      [assignmentResponse]="studentResponse"
+      [topic]="topic"
+    />
+  </div>
+</card>
+
+<card>
+  <div class="comments-header">
+    <span class="material-symbols-outlined"> group </span>
+    <h3>Class comments</h3>
+  </div>
+
+  <comment-list />
+  <comment-input />
+</card>

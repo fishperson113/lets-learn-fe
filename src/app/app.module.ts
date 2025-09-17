@@ -1,23 +1,42 @@
 import { NgModule } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 import { AppComponent } from './app.component';
 import { AuthModule } from './modules/auth/auth.module';
 import { AppRoutingModule } from './routes/app-route.module';
 import { SharedModule } from './shared/shared.module';
+import { CoursesModule } from '@modules/courses/courses.module';
+import { ToastrModule } from 'ngx-toastr';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideToastr } from 'ngx-toastr';
+import { CalendarModule } from '@modules/calendar/calendar.module';
+import { QuizModule } from '@modules/quiz/quiz.module';
+import { AssignmentModule } from '@modules/assignment/assignment.module';
 
 @NgModule({
   imports: [
     BrowserModule,
-    FormsModule,
-    ReactiveFormsModule,
     SharedModule,
     RouterOutlet,
     AppRoutingModule,
     AuthModule,
+    CoursesModule,
+    QuizModule,
+    AssignmentModule,
+    CalendarModule,
+    ToastrModule.forRoot(),
   ],
   declarations: [AppComponent],
   bootstrap: [AppComponent],
+  providers: [
+    provideToastr({
+      timeOut: 10000,
+      positionClass: 'toast-bottom-left',
+      preventDuplicates: true,
+      toastClass: 'custom-toast ngx-toastr',
+      closeButton: true,
+    }),
+    provideAnimations(),
+  ],
 })
 export class AppModule {}

@@ -1,0 +1,17 @@
+@use "styles/theme/theme.variables" as *;
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  ::ng-deep card {
+    height: 100%;
+    min-height: fit-content;
+  }
+}
+
+.title {
+  font-weight: 600;
+  color: $tint-third-color;
+  margin-bottom: 1rem;
+}

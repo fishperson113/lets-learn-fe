@@ -1,0 +1,52 @@
+<card>
+  <div class="assignment-card">
+    <!-- Left Section - Submissions -->
+    <div class="submissions-section">
+      <h3 class="section-title">Submissions</h3>
+
+      <div class="search-container">
+        <form-input
+          placeholder="Search student name"
+          [debounceTime]="200"
+          (onChange)="onSearchChange($event)"
+          size="xs"
+        />
+
+        <app-button label="Filter" variant="ghost">
+          <span class="material-symbols-outlined" icon> filter_alt </span>
+        </app-button>
+      </div>
+
+      <div class="students-list">
+        <div
+          class="student-item"
+          *ngFor="let res of filteredStudentResponses"
+          (click)="onResponseClick(res)"
+        >
+          <div class="student-info">
+            <circle-image />
+            <span class="student-name">{{ res.student.username }}</span>
+          </div>
+          <div class="student-score">
+            <span>{{ getMarkOfResponse(res) }}/100</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Section - Assignment Details -->
+    <div class="content">
+      @if(selectedStudentResponse) {
+      <div class="close-button" (click)="onCloseSubmittedView()">
+        <span class="material-symbols-outlined">close</span>
+      </div>
+      } @if(selectedStudentResponse) {
+      <submitted-view
+        [topic]="topic"
+        [studentResponse]="selectedStudentResponse"
+      />
+      } @else {
+      <default-view [topic]="topic" [studentResponses]="studentResponses" />}
+    </div>
+  </div>
+</card>

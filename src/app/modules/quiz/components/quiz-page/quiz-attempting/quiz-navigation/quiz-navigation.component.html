@@ -1,0 +1,32 @@
+<div class="timer" [class.fade-out]="showAnswer">
+  <h3>Timer</h3>
+  <app-timer />
+</div>
+
+<app-confirm-message />
+<app-button
+  [label]="showAnswer ? 'Finish review' : 'Finish attempt'"
+  (onClick)="showAnswer ? finishReview() : openConfirmMessage()"
+/>
+
+<div>
+  <h3 class="title">Quiz navigation</h3>
+  <div class="navigation-grid">
+    @for(question of questions; track question.id; let index = $index) {
+    <button
+      class="nav-button"
+      [class]="{
+      selected: !showAnswer && currentQuestionId === question.id,
+      answered: !showAnswer && answeredQuestionMap[question.id],
+      green: showAnswer && questionResultMap[question.id] === questionResults.FULL_MARK,
+      yellow: showAnswer && questionResultMap[question.id] === questionResults.PARTIAL_MARK,
+      red: showAnswer && questionResultMap[question.id] === questionResults.ZERO_MARK,
+      flagged: isFlagged(question.id),
+    }"
+      (click)="changeQuestion(question.id)"
+    >
+      {{ index + 1 }}
+    </button>
+    }
+  </div>
+</div>

@@ -1,0 +1,14 @@
+table {
+  width: 100%;
+  background-color: transparent;
+}
+
+mat-paginator {
+  background-color: transparent;
+
+  ::ng-deep .mat-mdc-paginator-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
