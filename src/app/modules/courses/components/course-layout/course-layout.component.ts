@@ -7,6 +7,7 @@ import {
 import { TabService } from '@shared/components/tab-list/tab-list.service';
 import { mockCourses } from '@shared/mocks/course';
 import { Course } from '@shared/models/course';
+import { User } from '@shared/models/user';
 import { BreadcrumbService } from '@shared/services/breadcrumb.service';
 
 @Component({
@@ -20,6 +21,8 @@ export class CourseLayoutComponent implements OnInit {
   selectedTab: string = CourseTab.COURSE;
   tabs = CourseTab;
   course: Course | null = null;
+  user: User | null = null;
+  isStudent = true;
 
   constructor(
     private route: ActivatedRoute,
