@@ -16,6 +16,7 @@ import { TeacherCourseListComponent } from './components/course-list/teacher-cou
 import { CoursesLayoutComponent } from './components/courses-layout/courses-layout.component';
 import { NewCourseFormComponent } from './components/new-course/new-course-form/new-course-form.component';
 import { NewCourseComponent } from './components/new-course/new-course.component';
+import { TabPeopleComponent } from './components/course-layout/course-tabs/tab-people/tab-people.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { NewCourseComponent } from './components/new-course/new-course.component
     TabActivitiesComponent,
     TabSettingComponent,
     ActivityComponent,
+    TabPeopleComponent,
   ],
   imports: [
     SharedModule,
