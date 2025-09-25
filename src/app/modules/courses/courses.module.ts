@@ -6,7 +6,10 @@ import { SharedComponentsModule } from '@shared/components/shared-components.mod
 import { SharedModule } from '@shared/shared.module';
 
 import { CourseLayoutComponent } from './components/course-layout/course-layout.component';
+import { ActivityComponent } from './components/course-layout/course-tabs/tab-activities/activity/activity.component';
+import { TabActivitiesComponent } from './components/course-layout/course-tabs/tab-activities/tab-activities.component';
 import { TabCourseComponent } from './components/course-layout/course-tabs/tab-course/tab-course.component';
+import { TabSettingComponent } from './components/course-layout/course-tabs/tab-setting/tab-settings.component';
 import { CourseListComponent } from './components/course-list/course-list.component';
 import { TeacherCourseCardComponent } from './components/course-list/teacher-course-list/teacher-course-card/teacher-course-card.component';
 import { TeacherCourseListComponent } from './components/course-list/teacher-course-list/teacher-course-list.component';
@@ -24,6 +27,9 @@ import { NewCourseComponent } from './components/new-course/new-course.component
     NewCourseComponent,
     CourseLayoutComponent,
     TabCourseComponent,
+    TabActivitiesComponent,
+    TabSettingComponent,
+    ActivityComponent,
   ],
   imports: [
     SharedModule,
