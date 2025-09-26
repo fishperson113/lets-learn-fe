@@ -30,7 +30,7 @@ const routes: Routes = [
         (m) => m.QuizAttemptingRoutingModule
       ),
   },
-  { path: '**', redirectTo: 'auth/login' },
+  // { path: '**', redirectTo: 'auth/login' }, // Temporarily disabled for topic link testing
 ];
 
 @NgModule({
