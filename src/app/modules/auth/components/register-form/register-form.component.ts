@@ -46,9 +46,9 @@ export class RegisterFormComponent implements OnInit {
     }
 
     this.loading = true;
-    const { email, password, username, isTeacher } = this.form.value;
+    const { email, password, username, confirmPassword, isTeacher } = this.form.value;
     await this.authService
-      .signup(username, email, password, isTeacher)
+      .signup(username, email, password, confirmPassword, isTeacher)
       .finally(() => {
         this.loading = false;
       });

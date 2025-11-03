@@ -17,6 +17,8 @@ export class AuthService {
   ) {}
 
   onLoginSuccess(res: any) {
+    localStorage.setItem('ACCESS_TOKEN', res.accessToken);
+    localStorage.setItem('REFRESH_TOKEN', res.refreshToken);
     return GetProfile().then((profile) => {
       this.userService.setUser(profile);
       this.toastService.success(res.message);
@@ -35,12 +37,14 @@ export class AuthService {
     username: string,
     email: string,
     password: string,
+    confirmPassword: string,
     isTeacher: boolean
   ) {
     return SignUp(
       username,
       email,
       password,
+      confirmPassword,
       isTeacher ? Role.TEACHER : Role.STUDENT
     )
       .then((res) => {

@@ -27,7 +27,19 @@ function addRefreshSubscriber(callback: () => void) {
   refreshSubscribers.push(callback);
 }
 
-// No request interceptor needed — cookies are sent automatically
+Axios.interceptors.request.use(
+  (config) => {
+    // Lấy access token từ localStorage (hoặc nơi bạn lưu token)
+    const accessToken = localStorage.getItem('ACCESS_TOKEN');
+    if (accessToken) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+    console.log('Request headers:', config.headers); 
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 Axios.interceptors.response.use(
   (response) => response,
   async (error) => {

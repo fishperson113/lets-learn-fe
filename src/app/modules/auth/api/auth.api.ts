@@ -13,12 +13,14 @@ export const SignUp = (
   username: string,
   email: string,
   password: string,
+  confirmPassword: string,
   role: Role
 ) => {
   const data = {
     username,
     email,
     password,
+    confirmPassword,
     role,
   };
   return POST('/auth/signup', data);
