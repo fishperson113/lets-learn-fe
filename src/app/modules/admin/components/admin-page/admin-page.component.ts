@@ -9,6 +9,8 @@ import {
   UserStatisticsDTO,
   CourseStatisticsDTO 
 } from '../../api/admin.api';
+import { UserService } from '@shared/services/user.service';
+import { Role } from '@shared/models/user';
 
 @Component({
   selector: 'app-admin-page',
@@ -26,6 +28,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   
   loading = true;
   error: string | null = null;
+  isAuthorized = false;
   
   // Filters
   activeTab: 'dashboard' | 'users' | 'courses' | 'statistics' = 'dashboard';
@@ -34,9 +37,19 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   coursePublishFilter: boolean | null = null;
   courseSearchQuery: string = '';
 
-  constructor() {}
+  constructor(private userService: UserService) {}
 
   ngOnInit() {
+    const currentUser = this.userService.getUser();
+    
+    if (!currentUser || currentUser.role !== Role.ADMIN) {
+      this.isAuthorized = false;
+      this.loading = false;
+      this.error = 'Access Denied: You do not have permission to view this page.';
+      return;
+    }
+    
+    this.isAuthorized = true;
     this.loadDashboard();
   }
 

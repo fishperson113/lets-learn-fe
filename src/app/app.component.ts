@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ROUTES } from '@shared/constants/routes';
 import { GOOGLE_ICON_LINK } from '@shared/helper/google-icon.helper';
 import { UserService } from '@shared/services/user.service';
+import { Role } from '@shared/models/user';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +32,7 @@ export class AppComponent implements OnInit {
         const currentUrl = this.router.url;
         
         // Track last non-admin route for non-admin users
-        if (user && user.role !== 'ADMIN' && 
+        if (user && user.role !== Role.ADMIN && 
             !currentUrl.startsWith('/admin') && 
             currentUrl !== ROUTES.LOGIN && 
             currentUrl !== ROUTES.SIGN_UP &&
@@ -59,26 +60,26 @@ export class AppComponent implements OnInit {
         ) {
           // Clear the url tree to avoid go back to the login page
           // Redirect admin users to admin page, others to home
-          const targetRoute = user.role === 'ADMIN' ? ROUTES.ADMIN : ROUTES.HOME;
+          const targetRoute = user.role === Role.ADMIN ? ROUTES.ADMIN : ROUTES.HOME;
           const tree = this.router.createUrlTree([targetRoute]);
           this.router.navigateByUrl(tree, { replaceUrl: true });
         }
         // If admin user tries to access non-admin routes, redirect to admin page
-        else if (
-          user.role === 'ADMIN' &&
-          !currentUrl.startsWith('/admin')
-        ) {
-          const tree = this.router.createUrlTree([ROUTES.ADMIN]);
-          this.router.navigateByUrl(tree, { replaceUrl: true });
-        }
+        // else if (
+        //   user.role === Role.ADMIN &&
+        //   !currentUrl.startsWith('/admin')
+        // ) {
+        //   const tree = this.router.createUrlTree([ROUTES.ADMIN]);
+        //   this.router.navigateByUrl(tree, { replaceUrl: true });
+        // }
         // If non-admin user tries to access admin route, redirect to last page
-        else if (
-          user.role !== 'ADMIN' &&
-          currentUrl.startsWith('/admin')
-        ) {
-          const tree = this.router.createUrlTree([this.lastNonAdminRoute]);
-          this.router.navigateByUrl(tree, { replaceUrl: true });
-        }
+        // else if (
+        //   user.role !== Role.ADMIN &&
+        //   currentUrl.startsWith('/admin')
+        // ) {
+        //   const tree = this.router.createUrlTree([this.lastNonAdminRoute]);
+        //   this.router.navigateByUrl(tree, { replaceUrl: true });
+        // }
       });
     });
   }

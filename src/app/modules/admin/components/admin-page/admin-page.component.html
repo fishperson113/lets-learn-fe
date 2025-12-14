@@ -45,6 +45,16 @@
     {{ error }}
   </div>
 
+  <!-- Forbidden Message for non-admin users -->
+  <div class="admin-content forbidden" *ngIf="!loading && !isAuthorized">
+    <div class="forbidden-content">
+      <span class="forbidden-icon">🚫</span>
+      <h2>Access Denied</h2>
+      <p>You do not have permission to view this page.</p>
+      <p>Only administrators can access the admin dashboard.</p>
+    </div>
+  </div>
+
   <!-- Loading State -->
   <div class="loading-container" *ngIf="loading">
     <div class="spinner"></div>
@@ -52,7 +62,7 @@
   </div>
 
   <!-- Dashboard Tab -->
-  <div class="admin-content" *ngIf="!loading && activeTab === 'dashboard' && dashboard">
+  <div class="admin-content" *ngIf="!loading && isAuthorized && activeTab === 'dashboard' && dashboard">
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">👥</div>
@@ -155,7 +165,7 @@
   </div>
 
   <!-- Users Tab -->
-  <div class="admin-content" *ngIf="!loading && activeTab === 'users'">
+  <div class="admin-content" *ngIf="!loading && isAuthorized && activeTab === 'users'">
     <div class="filters">
       <div class="filter-group">
         <label>Role Filter:</label>
@@ -204,7 +214,7 @@
   </div>
 
   <!-- Courses Tab -->
-  <div class="admin-content" *ngIf="!loading && activeTab === 'courses'">
+  <div class="admin-content" *ngIf="!loading && isAuthorized && activeTab === 'courses'">
     <div class="filters">
       <div class="filter-group">
         <label>Status Filter:</label>
@@ -259,7 +269,7 @@
   </div>
 
   <!-- Statistics Tab -->
-  <div class="admin-content" *ngIf="!loading && activeTab === 'statistics' && userStats && courseStats">
+  <div class="admin-content" *ngIf="!loading && isAuthorized && activeTab === 'statistics' && userStats && courseStats">
     <div class="statistics-grid">
       <div class="stats-section">
         <h2>User Statistics</h2>
