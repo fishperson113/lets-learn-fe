@@ -6,9 +6,11 @@ import { CalendarPageComponent } from '@modules/calendar/components/calendar-pag
 import { LayoutComponent } from '@shared/components/layout/layout.component';
 import { SettingsPageComponent } from '@modules/settings/components/settings-page/settings-page.component';
 import { LandingPageComponent } from '@modules/page/components/landing-page/landing-page.component';
+import { AdminPageComponent } from '@modules/admin/components/admin-page/admin-page.component';
 
 const routes: Routes = [
   { path: '', component: LandingPageComponent },
+  { path: 'admin', component: AdminPageComponent },
   { path: 'auth/login', component: LoginPageComponent },
   { path: 'auth/signup', component: RegisterPageComponent },
   { path: 'home', redirectTo: 'courses' },
@@ -60,7 +62,7 @@ const routes: Routes = [
         (m) => m.QuizAttemptingRoutingModule
       ),
   },
-  { path: '**', redirectTo: 'auth/login' },
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({

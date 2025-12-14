@@ -7,6 +7,7 @@ export type Enrollment = {
 export enum Role {
   TEACHER = "TEACHER",
   STUDENT = "STUDENT",
+  ADMIN = "ADMIN",
 }
 
 export type User = {

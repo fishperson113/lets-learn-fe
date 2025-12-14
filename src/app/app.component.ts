@@ -12,6 +12,7 @@ import { UserService } from '@shared/services/user.service';
 })
 export class AppComponent implements OnInit {
   title = 'ng-lets-learn-fe';
+  private lastNonAdminRoute: string = ROUTES.HOME;
 
   constructor(private userService: UserService, private router: Router) {}
 
@@ -27,12 +28,24 @@ export class AppComponent implements OnInit {
       // Use set timeout to ensure the router navigation happens after the current change detection cycle
       // This ensures that we can get correct current URL
       setTimeout(() => {
+        const currentUrl = this.router.url;
+        
+        // Track last non-admin route for non-admin users
+        if (user && user.role !== 'ADMIN' && 
+            !currentUrl.startsWith('/admin') && 
+            currentUrl !== ROUTES.LOGIN && 
+            currentUrl !== ROUTES.SIGN_UP &&
+            currentUrl !== '/') {
+          this.lastNonAdminRoute = currentUrl;
+        }
+
         // If user is not logged in, redirect to login page
         if (!user) {
-          // If the current URL is not login or sign up, redirect to login page
+          // Allow access to landing page, login and sign up without authentication
           if (
-            this.router.url !== ROUTES.LOGIN &&
-            this.router.url !== ROUTES.SIGN_UP
+            currentUrl !== ROUTES.LOGIN &&
+            currentUrl !== ROUTES.SIGN_UP &&
+            currentUrl !== '/'
           ) {
             const tree = this.router.createUrlTree([ROUTES.LOGIN]);
             this.router.navigateByUrl(tree, { replaceUrl: true });
@@ -40,11 +53,30 @@ export class AppComponent implements OnInit {
         }
         // If user is logged in, redirect to home page if current URL is login or sign up
         else if (
-          this.router.url === ROUTES.LOGIN ||
-          this.router.url === ROUTES.SIGN_UP
+          currentUrl === ROUTES.LOGIN ||
+          currentUrl === ROUTES.SIGN_UP ||
+          currentUrl === '/'
         ) {
           // Clear the url tree to avoid go back to the login page
-          const tree = this.router.createUrlTree([ROUTES.HOME]);
+          // Redirect admin users to admin page, others to home
+          const targetRoute = user.role === 'ADMIN' ? ROUTES.ADMIN : ROUTES.HOME;
+          const tree = this.router.createUrlTree([targetRoute]);
+          this.router.navigateByUrl(tree, { replaceUrl: true });
+        }
+        // If admin user tries to access non-admin routes, redirect to admin page
+        else if (
+          user.role === 'ADMIN' &&
+          !currentUrl.startsWith('/admin')
+        ) {
+          const tree = this.router.createUrlTree([ROUTES.ADMIN]);
+          this.router.navigateByUrl(tree, { replaceUrl: true });
+        }
+        // If non-admin user tries to access admin route, redirect to last page
+        else if (
+          user.role !== 'ADMIN' &&
+          currentUrl.startsWith('/admin')
+        ) {
+          const tree = this.router.createUrlTree([this.lastNonAdminRoute]);
           this.router.navigateByUrl(tree, { replaceUrl: true });
         }
       });

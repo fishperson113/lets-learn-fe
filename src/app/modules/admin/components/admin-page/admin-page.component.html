@@ -1,0 +1,321 @@
+<div class="admin-container">
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="header-content">
+      <h1>Admin Dashboard</h1>
+      <p>Manage users, courses, and view system statistics</p>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="admin-tabs">
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'dashboard'"
+      (click)="switchTab('dashboard')">
+      <span class="tab-icon">📊</span>
+      Dashboard
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'users'"
+      (click)="switchTab('users')">
+      <span class="tab-icon">👥</span>
+      Users
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'courses'"
+      (click)="switchTab('courses')">
+      <span class="tab-icon">📚</span>
+      Courses
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'statistics'"
+      (click)="switchTab('statistics')">
+      <span class="tab-icon">📈</span>
+      Statistics
+    </button>
+  </nav>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="error">
+    <span class="error-icon">⚠️</span>
+    {{ error }}
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Dashboard Tab -->
+  <div class="admin-content" *ngIf="!loading && activeTab === 'dashboard' && dashboard">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3>Total Users</h3>
+          <p class="stat-number">{{ dashboard.totalUsers }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🎓</div>
+        <div class="stat-content">
+          <h3>Students</h3>
+          <p class="stat-number">{{ dashboard.totalStudents }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">👨‍🏫</div>
+        <div class="stat-content">
+          <h3>Teachers</h3>
+          <p class="stat-number">{{ dashboard.totalTeachers }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🔐</div>
+        <div class="stat-content">
+          <h3>Admins</h3>
+          <p class="stat-number">{{ dashboard.totalAdmins }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <h3>Total Courses</h3>
+          <p class="stat-number">{{ dashboard.totalCourses }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <h3>Active Courses</h3>
+          <p class="stat-number">{{ dashboard.activeCourses }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="recent-sections">
+      <div class="recent-section">
+        <h2>Recent Users</h2>
+        <div class="table-container">
+          <table *ngIf="dashboard.recentUsers.length > 0">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of dashboard.recentUsers">
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td><span class="role-badge" [attr.data-role]="user.role.toLowerCase()">{{ user.role }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="no-data" *ngIf="dashboard.recentUsers.length === 0">No recent users</p>
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <h2>Recent Courses</h2>
+        <div class="table-container">
+          <table *ngIf="dashboard.recentCourses.length > 0">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let course of dashboard.recentCourses">
+                <td>{{ course.title }}</td>
+                <td>
+                  <span class="status-badge" [class.published]="course.isPublished">
+                    {{ course.isPublished ? 'Published' : 'Draft' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="no-data" *ngIf="dashboard.recentCourses.length === 0">No recent courses</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Tab -->
+  <div class="admin-content" *ngIf="!loading && activeTab === 'users'">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Role Filter:</label>
+        <select (change)="onUserRoleFilterChange($any($event.target).value)">
+          <option value="">All Roles</option>
+          <option value="Student">Student</option>
+          <option value="Teacher">Teacher</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search:</label>
+        <input 
+          type="text" 
+          placeholder="Search by username or email..."
+          (input)="onUserSearchChange($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table *ngIf="users.length > 0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td><span class="role-badge" [attr.data-role]="user.role.toLowerCase()">{{ user.role }}</span></td>
+            <td>
+              <button class="action-btn delete" (click)="deleteUser(user.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="no-data" *ngIf="users.length === 0">No users found</p>
+    </div>
+  </div>
+
+  <!-- Courses Tab -->
+  <div class="admin-content" *ngIf="!loading && activeTab === 'courses'">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Status Filter:</label>
+        <select (change)="onCoursePublishFilterChange($any($event.target).value === 'true' ? true : $any($event.target).value === 'false' ? false : null)">
+          <option value="">All Courses</option>
+          <option value="true">Published</option>
+          <option value="false">Unpublished</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search:</label>
+        <input 
+          type="text" 
+          placeholder="Search by title or description..."
+          (input)="onCourseSearchChange($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table *ngIf="courses.length > 0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let course of courses">
+            <td>{{ course.id }}</td>
+            <td>{{ course.title }}</td>
+            <td>{{ course.description || 'No description' }}</td>
+            <td>
+              <span class="status-badge" [class.published]="course.isPublished">
+                {{ course.isPublished ? 'Published' : 'Draft' }}
+              </span>
+            </td>
+            <td>
+              <button class="action-btn toggle" (click)="toggleCoursePublish(course.id, course.isPublished)">
+                {{ course.isPublished ? 'Unpublish' : 'Publish' }}
+              </button>
+              <button class="action-btn delete" (click)="deleteCourse(course.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="no-data" *ngIf="courses.length === 0">No courses found</p>
+    </div>
+  </div>
+
+  <!-- Statistics Tab -->
+  <div class="admin-content" *ngIf="!loading && activeTab === 'statistics' && userStats && courseStats">
+    <div class="statistics-grid">
+      <div class="stats-section">
+        <h2>User Statistics</h2>
+        <div class="stats-cards">
+          <div class="stat-card">
+            <h3>Total Users</h3>
+            <p class="stat-number">{{ userStats.totalUsers }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Students</h3>
+            <p class="stat-number">{{ userStats.studentCount }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Teachers</h3>
+            <p class="stat-number">{{ userStats.teacherCount }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Admins</h3>
+            <p class="stat-number">{{ userStats.adminCount }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>New This Month</h3>
+            <p class="stat-number">{{ userStats.newUsersThisMonth }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Growth Rate</h3>
+            <p class="stat-number">{{ userStats.userGrowthRate }}%</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <h2>Course Statistics</h2>
+        <div class="stats-cards">
+          <div class="stat-card">
+            <h3>Total Courses</h3>
+            <p class="stat-number">{{ courseStats.totalCourses }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Published</h3>
+            <p class="stat-number">{{ courseStats.publishedCourses }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Unpublished</h3>
+            <p class="stat-number">{{ courseStats.unpublishedCourses }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>New This Month</h3>
+            <p class="stat-number">{{ courseStats.newCoursesThisMonth }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Growth Rate</h3>
+            <p class="stat-number">{{ courseStats.courseGrowthRate }}%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
