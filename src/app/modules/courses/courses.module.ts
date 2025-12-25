@@ -13,6 +13,7 @@ import { TeacherCourseCardComponent } from './components/course-list/teacher-cou
 import { TeacherCourseListComponent } from './components/course-list/teacher-course-list/teacher-course-list.component';
 import { CoursesLayoutComponent } from './components/courses-layout/courses-layout.component';
 import { NewCourseFormComponent } from './components/new-course/new-course-form/new-course-form.component';
+import { CloneCourseFormComponent } from './components/new-course/clone-course-form/clone-course-form.component';
 import { NewCourseComponent } from './components/new-course/new-course.component';
 import { TabPeopleComponent } from './components/course-layout/course-tabs/tab-people/tab-people.component';
 import { ActivityComponent } from './components/course-layout/course-tabs/tab-activities/activity/activity.component';
@@ -35,6 +36,7 @@ import { StudentCourseCardComponent } from './components/course-list/student-cou
     TeacherCourseListComponent,
     CoursesLayoutComponent,
     NewCourseFormComponent,
+    CloneCourseFormComponent,
     NewCourseComponent,
     CourseLayoutComponent,
     ActivityComponent,

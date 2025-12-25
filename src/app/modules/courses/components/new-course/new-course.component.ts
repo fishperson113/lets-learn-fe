@@ -9,7 +9,13 @@ import { Component, inject } from '@angular/core';
 })
 export class NewCourseComponent {
   location = inject(Location);
+  activeTab: 'create' | 'clone' = 'create';
+
   onNavigateBack() {
     this.location.back();
+  }
+
+  switchTab(tab: 'create' | 'clone') {
+    this.activeTab = tab;
   }
 }
