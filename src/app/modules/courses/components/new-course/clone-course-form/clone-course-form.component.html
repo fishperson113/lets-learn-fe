@@ -1,0 +1,107 @@
+<h2>Clone an existing course</h2>
+<form [formGroup]="form" (submit)="onSubmit($event)">
+  <!-- Source Course Selection -->
+  <label for="sourceCourseId" class="input-label">Source Course</label>
+  @if(loadingCourses) {
+    <p class="loading-text">Loading your courses...</p>
+  } @else if(availableCourses.length === 0) {
+    <p class="empty-text">No courses available to clone</p>
+  } @else {
+    <select 
+      id="sourceCourseId" 
+      formControlName="sourceCourseId" 
+      class="course-select"
+    >
+      <option value="" disabled selected>Select a course to clone</option>
+      @for(course of availableCourses; track course.id) {
+        <option [value]="course.id">{{ course.title }} ({{ course.id }})</option>
+      }
+    </select>
+    @if(form.get('sourceCourseId')?.invalid && form.get('sourceCourseId')?.touched) {
+      <span class="error-message">Please select a source course</span>
+    }
+  }
+  <span class="description">Choose a course to use as a template</span>
+
+  <!-- New Course ID -->
+  <label for="newCourseId" class="input-label">New Course ID</label>
+  <form-input
+    id="newCourseId"
+    [form]="form"
+    type="text"
+    controlName="newCourseId"
+    placeholder="E.g. CS101-2024"
+    [validationMessages]="{
+      required: 'Course ID is required',
+      minlength: 'Course ID must be at least 2 characters'
+    }"
+  />
+  <span class="description">Enter a unique ID for the new course</span>
+
+  <!-- Course Title -->
+  <label for="title" class="input-label">Course Name</label>
+  <form-input
+    id="title"
+    [form]="form"
+    type="text"
+    controlName="title"
+    placeholder="E.g. Introduction to Astronomy (Copy)"
+    [validationMessages]="{
+      required: 'Course name is required',
+      minlength: 'Course name must be at least 3 characters'
+    }"
+  />
+  <span class="description">Give your new course a name</span>
+
+  <!-- Category -->
+  <label for="category" class="input-label">Category</label>
+  <form-input
+    id="category"
+    [form]="form"
+    type="text"
+    controlName="category"
+    placeholder="E.g. Academic"
+    [validationMessages]="{
+      required: 'Course category is required',
+      minlength: 'Course category must be at least 3 characters'
+    }"
+  />
+  <span class="description">What subject area best describes your course?</span>
+
+  <!-- Level -->
+  <label for="level" class="input-label">Level</label>
+  <form-input
+    id="level"
+    [form]="form"
+    type="text"
+    controlName="level"
+    placeholder="E.g. Beginner"
+    [validationMessages]="{
+      required: 'Course level is required'
+    }"
+  />
+  <span class="description">What level is your course?</span>
+
+  <!-- Visibility -->
+  <label for="visibility" class="input-label">Visibility</label>
+  <app-combobox
+    [form]="form"
+    controlName="visibility"
+    [validationMessages]="{
+      required: 'Course visibility is required'
+    }"
+    [options]="[
+      { value: '1', label: 'Public' },
+      { value: '0', label: 'Private' }
+    ]"
+  />
+  @if(visibilityValue === '1') {
+    <span class="description">Anyone can access the course</span>
+  } @else if(visibilityValue === '0') {
+    <span class="description">Only participants can access the course</span>
+  } @else {
+    <span class="description">Choose who can access your course</span>
+  }
+
+  <app-button label="Clone Course" type="submit" [loading]="loading" />
+</form>
