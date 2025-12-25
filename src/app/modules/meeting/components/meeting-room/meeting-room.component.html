@@ -146,6 +146,12 @@
               <span class="material-icons">close</span>
             </button>
           </div>
+          <div class="panel-actions" style="padding: 0 16px 16px;" *ngIf="userRole === 'teacher'">
+            <button class="btn-attendance" (click)="exportAttendance()" style="width: 100%; padding: 8px; background: #e3f2fd; color: #1976D2; border: 1px dashed #1976D2; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span class="material-icons" style="font-size: 18px;">download</span>
+              Export Attendance
+            </button>
+          </div>
           <div class="panel-body">
             <!-- Local Participant -->
             <div class="participant-item">
@@ -218,6 +224,47 @@
             </div>
           </div>
         </div>
+
+        <!-- Polls Panel -->
+        <div class="panel-content" *ngIf="showPolls">
+          <div class="panel-header">
+            <h3>Polls</h3>
+            <button class="close-panel" (click)="togglePolls()">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+          <div class="panel-body">
+            <!-- Create Poll (Teacher/Host only) -->
+            <div class="polls-container" style="padding: 16px;">
+        <h3 style="margin-top: 0;">Polls</h3>
+        
+        <app-poll-create *ngIf="pollState === 'idle' && userRole === 'teacher'" (createPoll)="handleCreatePoll($event)" (cancel)="showPolls = false"></app-poll-create>
+        
+        <div *ngIf="pollState === 'idle' && userRole !== 'teacher'" style="text-align: center; color: #666; margin-top: 40px;">
+            <span class="material-icons" style="font-size: 48px; color: #ddd;">poll</span>
+            <p>Waiting for host to start a poll...</p>
+        </div>
+
+        <app-poll-vote 
+            *ngIf="pollState === 'active' && !hasVoted && !isPollCreator"
+            [poll]="currentPoll!"
+            (submitVote)="handleSubmitVote($event)">
+        </app-poll-vote>
+            </div>
+
+            <!-- Results (Teacher or after vote) -->
+            <div *ngIf="pollState === 'ended' || hasVoted || isPollCreator" class="poll-result-wrapper">
+               <app-poll-result
+                 [poll]="currentPoll!"
+                 [results]="pollResults"
+                 [totalVotes]="totalPollVotes"
+                 [isHost]="isPollCreator"
+                 [isActive]="pollState === 'active'"
+                 (closePoll)="handleEndPoll()">
+               </app-poll-result>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -278,6 +325,7 @@
         <button 
           class="control-btn"
           title="Record"
+          *ngIf="userRole === 'teacher'"
         >
           <span class="material-icons">fiber_manual_record</span>
           <span class="btn-label">Record</span>
@@ -362,6 +410,15 @@
           title="Chat"
         >
           <span class="material-icons">chat</span>
+        </button>
+
+        <button 
+          class="control-btn poll-btn"
+          (click)="togglePolls()"
+          [class.active]="showPolls"
+          title="Polls"
+        >
+          <span class="material-icons">poll</span>
         </button>
       </div>
     </div>

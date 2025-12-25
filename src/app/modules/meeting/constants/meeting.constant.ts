@@ -1,6 +1,7 @@
 export enum MeetingTab {
   DETAIL = 'Detail',
   SETTINGS = 'Settings',
+  HISTORY = 'History',
 }
 
 // Backward compatibility (if any external code still references MEETING)

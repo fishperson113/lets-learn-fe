@@ -4,6 +4,8 @@
   <tab-meeting [topic]="topic" [course]="course!" />
   } @else if(selectedTab === tabs.SETTINGS && !isStudent) {
   <tab-setting [topic]="topic" />
+  } @else if(selectedTab === tabs.HISTORY && !isStudent) {
+  <app-tab-history />
   }
 </topic-page-layout>
 }

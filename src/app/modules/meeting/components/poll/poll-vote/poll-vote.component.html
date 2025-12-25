@@ -1,0 +1,41 @@
+<div class="poll-vote-container">
+  <div class="poll-header">
+    <div class="poll-badge">Poll</div>
+    <h3>{{ poll.question }}</h3>
+    <p class="poll-meta" *ngIf="poll.multipleChoice">Multiple select allowed</p>
+  </div>
+
+  <div class="poll-options">
+    <!-- Single Choice -->
+    <div *ngIf="!poll.multipleChoice" class="radio-group">
+      <label *ngFor="let option of poll.options" class="poll-option-label" [class.selected]="selectedOptionId === option.id">
+        <input 
+          type="radio" 
+          name="poll-option" 
+          [value]="option.id" 
+          [(ngModel)]="selectedOptionId"
+        >
+        <span class="option-text">{{ option.text }}</span>
+        <span class="check-mark"></span>
+      </label>
+    </div>
+
+    <!-- Multiple Choice -->
+    <div *ngIf="poll.multipleChoice" class="checkbox-group">
+      <label *ngFor="let option of poll.options" class="poll-option-label" [class.selected]="selectedOptionIds[option.id]">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="selectedOptionIds[option.id]"
+        >
+        <span class="option-text">{{ option.text }}</span>
+        <span class="check-mark"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="poll-actions">
+    <button class="btn-submit" (click)="submit()" [disabled]="!isValid">
+      Submit Vote
+    </button>
+  </div>
+</div>

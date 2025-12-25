@@ -1,0 +1,74 @@
+<div class="poll-create-container">
+  <div class="header">
+    <h3>Create a Poll</h3>
+  </div>
+
+  <div class="form-group">
+    <label>Question</label>
+    <textarea 
+      [(ngModel)]="question" 
+      placeholder="Ask a question..."
+      rows="3"
+      class="form-control"
+    ></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Options</label>
+    <div class="option-list">
+      <div *ngFor="let option of options; let i = index" class="option-item">
+        <input 
+          type="text" 
+          [(ngModel)]="option.text" 
+          [placeholder]="'Option ' + (i + 1)"
+          class="form-control"
+        >
+        <button 
+          class="remove-btn" 
+          (click)="removeOption(i)" 
+          [disabled]="options.length <= 2"
+          title="Remove option"
+        >
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+    <button class="add-option-btn" (click)="addOption()">
+      <span class="material-icons">add</span> Add Option
+    </button>
+    
+    <div style="margin-top: 16px; border-top: 1px dashed #eee; padding-top: 12px;">
+      <button class="btn-text" (click)="toggleQuestionBank()" style="color: #673AB7; background: none; border: none; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <span class="material-icons">library_books</span> Import from Question Bank
+      </button>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <label class="checkbox-label">
+      <input type="checkbox" [(ngModel)]="multipleChoice">
+      <span>Allow multiple choice</span>
+    </label>
+    <!-- 
+    <label class="checkbox-label">
+      <input type="checkbox" [(ngModel)]="anonymous">
+      <span>Anonymous voting</span>
+    </label>
+    -->
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+    <button class="btn btn-primary" (click)="onSubmit()" [disabled]="!isValid()">
+      Create Poll
+    </button>
+  </div>
+
+  <!-- Question Bank Overlay -->
+  <div class="bank-overlay" *ngIf="showQuestionBank">
+    <app-question-bank 
+      (selectQuestion)="onQuestionSelected($event)"
+      (close)="toggleQuestionBank()">
+    </app-question-bank>
+  </div>
+</div>

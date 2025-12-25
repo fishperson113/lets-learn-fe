@@ -7,11 +7,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GetMeetingToken } from '../../api/meeting.api';
 import { WhiteboardComponent } from '../whiteboard/whiteboard.component';
+import { PollCreateComponent, PollData } from '../poll/poll-create/poll-create.component';
+import { PollVoteComponent } from '../poll/poll-vote/poll-vote.component';
+import { PollResultComponent } from '../poll/poll-result/poll-result.component';
 
 @Component({
   selector: 'app-meeting-room',
   standalone: true,
-  imports: [CommonModule, FormsModule, WhiteboardComponent],
+  imports: [CommonModule, FormsModule, WhiteboardComponent, PollCreateComponent, PollVoteComponent, PollResultComponent],
   templateUrl: './meeting-room.component.html',
   styleUrls: ['./meeting-room-livekit.component.scss'],
   providers: [LiveKitService],
@@ -55,9 +58,32 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   activeScreenShare: { participantId: string; participantName: string } | null = null;
   remoteScreenShares: Array<{ participantId: string; participantName: string }> = [];
 
+  // Poll State
+  showPolls: boolean = false;
+  pollState: 'idle' | 'active' | 'ended' = 'idle';
+  currentPoll: PollData | null = null;
+  pollResults: { [optionId: string]: number } = {};
+  totalPollVotes: number = 0;
+  hasVoted: boolean = false;
+  isPollCreator: boolean = false;
+  
+  // Role & Permissions
+  userRole: 'teacher' | 'student' = 'student';
+  currentUserAvatar: string = '';
+
+
   private destroy$ = new Subject<void>();
   remoteParticipantElements: Map<string, { video?: HTMLVideoElement; audio?: HTMLAudioElement }> = new Map();
   
+  // Attendance History
+  attendanceRecords: Map<string, {
+    name: string;
+    firstJoinTime: number;
+    lastLeaveTime?: number;
+    sessions: { start: number; end?: number }[];
+    status: 'Active' | 'Left';
+  }> = new Map();
+
   private topicId: string | null = null;
   private courseId: string | null = null;
 
@@ -91,6 +117,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
         
         // Attach local tracks when connected
         if (state.isConnected && state.localParticipant) {
+          this.trackParticipantJoin(state.localParticipant.identity, 'You (Host)');
           setTimeout(() => {
             this.attachLocalTracks();
             this.updateDeviceStates();
@@ -104,12 +131,14 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((participant) => {
         this.handleRemoteParticipant(participant);
+        this.trackParticipantJoin(participant.identity, this.getParticipantDisplayName(participant.identity));
       });
 
     this.liveKitService.participantDisconnected$
       .pipe(takeUntil(this.destroy$))
       .subscribe((participant) => {
         this.remoteParticipantElements.delete(participant.identity);
+        this.trackParticipantLeave(participant.identity);
       });
 
     // Listen for data messages (whiteboard actions)
@@ -125,6 +154,8 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
           this.handleRaiseHand(data, senderId);
         } else if (data.type === 'chat') {
           this.handleChatMessage(data, senderId);
+        } else if (data.type.startsWith('poll-')) {
+          this.handlePollAction(data, senderId);
         }
       });
 
@@ -164,6 +195,8 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       
       this.token = response.token;
       this.roomName = response.roomName;
+      this.userRole = (response.role === 'teacher') ? 'teacher' : 'student';
+      this.currentUserAvatar = response.avatarUrl || '';
       
       // Auto-join with fetched token
       await this.joinRoom();
@@ -301,7 +334,109 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     if (this.showChat) {
       this.showMeetingDetails = false;
       this.showParticipants = false;
+      this.showPolls = false;
     }
+  }
+
+  togglePolls(): void {
+    this.showPolls = !this.showPolls;
+    if (this.showPolls) {
+      this.showMeetingDetails = false;
+      this.showParticipants = false;
+      this.showChat = false;
+    }
+  }
+
+  // Poll Methods
+  handleCreatePoll(pollData: PollData): void {
+    if (this.userRole !== 'teacher') {
+      console.warn('Unauthorized: Only teachers can create polls');
+      return;
+    }
+
+    this.currentPoll = pollData;
+    this.pollState = 'active';
+    this.pollResults = {};
+    this.totalPollVotes = 0;
+    this.hasVoted = false;
+    this.isPollCreator = true;
+    
+    // Initialize results count
+    pollData.options.forEach(opt => this.pollResults[opt.id] = 0);
+
+    // Broadcast start
+    this.liveKitService.sendData({
+      type: 'poll-start',
+      poll: pollData,
+      creatorId: this.currentUserIdentity
+    });
+  }
+
+  handleSubmitVote(optionIds: string[]): void {
+    this.hasVoted = true;
+
+    // Send vote to host/all
+    this.liveKitService.sendData({
+      type: 'poll-vote',
+      optionIds: optionIds,
+      voterId: this.currentUserIdentity
+    });
+
+    // Update local immediately if we want realtime for everyone, 
+    // or wait for host update? Let's update locally for immediate feedback 
+    // but better to allow everyone to calculate.
+    // Simplifying: Everyone calculates results locally based on received votes.
+    this.processVote(optionIds);
+  }
+
+  handleEndPoll(): void {
+    if (this.userRole !== 'teacher' && !this.isPollCreator) return;
+    
+    this.pollState = 'ended';
+    
+    this.liveKitService.sendData({
+      type: 'poll-end',
+      pollId: 'current' // Simplification
+    });
+  }
+
+  private handlePollAction(data: any, senderId: string): void {
+    switch (data.type) {
+      case 'poll-start':
+        this.currentPoll = data.poll;
+        this.pollState = 'active';
+        this.pollResults = {};
+        this.totalPollVotes = 0;
+        this.hasVoted = false;
+        this.isPollCreator = (senderId === this.currentUserIdentity);
+        this.showPolls = true; // Auto-open poll panel
+        
+        if (this.currentPoll) {
+          this.currentPoll.options.forEach(opt => this.pollResults[opt.id] = 0);
+        }
+        break;
+        
+      case 'poll-vote':
+        // If we are showing results real-time to everyone:
+        this.processVote(data.optionIds);
+        break;
+        
+      case 'poll-end':
+        this.pollState = 'ended';
+        this.showPolls = true;
+        break;
+    }
+  }
+
+  private processVote(optionIds: string[]): void {
+    if (!this.currentPoll) return;
+    
+    optionIds.forEach(id => {
+      if (this.pollResults[id] !== undefined) {
+        this.pollResults[id]++;
+        this.totalPollVotes++;
+      }
+    });
   }
 
   sendReaction(emoji: string): void {
@@ -456,76 +591,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   private handleWhiteboardAction(data: any): void {
     if (data.type === 'whiteboard' && this.whiteboardComponent) {
       // Apply the remote action to local whiteboard
-      this.applyRemoteWhiteboardAction(data.action);
-    }
-  }
-
-  private applyRemoteWhiteboardAction(action: any): void {
-    if (!this.whiteboardComponent) return;
-
-    const canvas = this.whiteboardComponent.canvasRef?.nativeElement;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    console.log('Applying remote action:', action);
-
-    switch (action.type) {
-      case 'draw':
-        this.drawRemotePath(ctx, action.data);
-        break;
-      case 'clear':
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        break;
-      case 'text':
-        ctx.fillStyle = action.data.color;
-        ctx.font = `${action.data.fontSize}px Arial`;
-        ctx.fillText(action.data.text, action.data.x, action.data.y);
-        break;
-      case 'shape':
-        this.drawRemoteShape(ctx, action.data);
-        break;
-    }
-  }
-
-  private drawRemotePath(ctx: CanvasRenderingContext2D, data: any): void {
-    if (!data.path || data.path.length === 0) return;
-
-    const path = data.path;
-    ctx.beginPath();
-    ctx.moveTo(path[0].x, path[0].y);
-
-    for (let i = 1; i < path.length; i++) {
-      ctx.strokeStyle = data.tool === 'eraser' ? '#FFFFFF' : path[i].color;
-      ctx.lineWidth = data.tool === 'eraser' ? path[i].width * 2 : path[i].width;
-      ctx.lineTo(path[i].x, path[i].y);
-    }
-
-    ctx.stroke();
-    ctx.closePath();
-  }
-
-  private drawRemoteShape(ctx: CanvasRenderingContext2D, data: any): void {
-    ctx.strokeStyle = data.color;
-    ctx.lineWidth = data.width;
-    ctx.beginPath();
-
-    if (data.tool === 'line') {
-      ctx.moveTo(data.startX, data.startY);
-      ctx.lineTo(data.endX, data.endY);
-      ctx.stroke();
-    } else if (data.tool === 'rectangle') {
-      const width = data.endX - data.startX;
-      const height = data.endY - data.startY;
-      ctx.strokeRect(data.startX, data.startY, width, height);
-    } else if (data.tool === 'circle') {
-      const radius = Math.sqrt(
-        Math.pow(data.endX - data.startX, 2) + Math.pow(data.endY - data.startY, 2)
-      );
-      ctx.arc(data.startX, data.startY, radius, 0, 2 * Math.PI);
-      ctx.stroke();
+      this.whiteboardComponent.handleRemoteAction(data.action);
     }
   }
 
@@ -641,6 +707,72 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   isHandRaisedFor(identity: string): boolean {
     return this.raisedHands.has(identity);
+  }
+
+  // Attendance Tracking Helpers
+  private trackParticipantJoin(identity: string, name: string): void {
+    const now = Date.now();
+    
+    if (!this.attendanceRecords.has(identity)) {
+      this.attendanceRecords.set(identity, {
+        name,
+        firstJoinTime: now,
+        sessions: [{ start: now }],
+        status: 'Active'
+      });
+    } else {
+        const record = this.attendanceRecords.get(identity)!;
+        record.status = 'Active';
+        record.sessions.push({ start: now });
+        // Update name if changed? Keep original for now or update.
+    }
+  }
+
+  private trackParticipantLeave(identity: string): void {
+    const now = Date.now();
+    const record = this.attendanceRecords.get(identity);
+    
+    if (record) {
+      record.status = 'Left';
+      record.lastLeaveTime = now;
+      // Close last session
+      const lastSession = record.sessions[record.sessions.length - 1];
+      if (lastSession && !lastSession.end) {
+        lastSession.end = now;
+      }
+    }
+  }
+
+  exportAttendance(): void {
+    const now = Date.now();
+    const csvRows: string[] = [];
+    csvRows.push("Name,First Join Time,Last Leave Time,Status,Total Duration (min)");
+
+    this.attendanceRecords.forEach(record => {
+        // Calculate total duration
+        let totalDurationMs = 0;
+        record.sessions.forEach(session => {
+            const end = session.end || now;
+            totalDurationMs += (end - session.start);
+        });
+        
+        const durationMin = (totalDurationMs / 60000).toFixed(1);
+        const joinTime = new Date(record.firstJoinTime).toLocaleTimeString();
+        const leaveTime = record.lastLeaveTime ? new Date(record.lastLeaveTime).toLocaleTimeString() : '-';
+        
+        csvRows.push(`${record.name},${joinTime},${leaveTime},${record.status},${durationMin}`);
+    });
+    
+    // Generate CSV
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+      
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `attendance-full-${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   private scrollChatToBottom(): void {

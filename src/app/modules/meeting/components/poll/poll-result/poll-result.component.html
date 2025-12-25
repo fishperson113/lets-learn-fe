@@ -1,0 +1,30 @@
+<div class="poll-result-container">
+  <div class="header">
+    <div class="status-badge" [class.active]="isActive">
+      {{ isActive ? 'Active' : 'Ended' }}
+    </div>
+    <h3>Poll Results</h3>
+    <div class="question">{{ poll.question }}</div>
+    <div class="meta">{{ totalVotes }} votes</div>
+  </div>
+
+  <div class="results-list">
+    <div class="result-item" *ngFor="let option of poll.options">
+      <div class="item-header">
+        <span class="label">{{ option.text }}</span>
+        <span class="count">{{ results[option.id] || 0 }} ({{ getPercentage(option.id) }}%)</span>
+      </div>
+      <div class="progress-track">
+        <div 
+          class="progress-bar" 
+          [style.width.%]="getPercentage(option.id)"
+          [class.winner]="isActive && (results[option.id] || 0) === maxVotes && maxVotes > 0"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions" *ngIf="isHost && isActive">
+    <button class="btn-end" (click)="onClose()">End Poll</button>
+  </div>
+</div>

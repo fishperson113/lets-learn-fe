@@ -5,7 +5,7 @@ import { GET } from '@shared/api/utils.api';
 export const GetMeetingToken = (
   topicId: string,
   courseId: string
-): Promise<{ token: string; roomName: string; wsUrl: string }> => {
+): Promise<{ token: string; roomName: string; wsUrl: string; role: string; avatarUrl: string }> => {
   return GET(`/course/${courseId}/meeting/${topicId}/token`);
 };
 

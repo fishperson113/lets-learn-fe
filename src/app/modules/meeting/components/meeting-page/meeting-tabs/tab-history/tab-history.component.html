@@ -1,0 +1,59 @@
+<div class="history-container">
+  <div class="history-section">
+    <h3>Past Sessions</h3>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Duration</th>
+            <th>Attendees</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let session of sessions">
+            <td>{{ session.date | date:'medium' }}</td>
+            <td>{{ session.duration }} min</td>
+            <td>{{ session.attendees }}</td>
+            <td>
+              <button class="btn-icon" (click)="exportSession(session.id)" title="Download Attendance">
+                <span class="material-icons">download</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="history-section">
+    <h3>Poll History</h3>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Question</th>
+            <th>Votes</th>
+            <th>Top Answer</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let poll of polls">
+            <td>{{ poll.date | date:'shortDate' }}</td>
+            <td class="col-question">{{ poll.question }}</td>
+            <td>{{ poll.totalVotes }}</td>
+            <td><span class="badge">{{ poll.winner }}</span></td>
+            <td>
+              <button class="btn-icon" (click)="exportPoll(poll.id)" title="Download Results">
+                <span class="material-icons">assessment</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

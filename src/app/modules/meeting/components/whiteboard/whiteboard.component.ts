@@ -76,6 +76,8 @@ export class WhiteboardComponent implements AfterViewInit, OnDestroy {
   
   // Drawing data for real-time sync
   private currentPath: DrawPoint[] = [];
+  private lastEmitTime = 0;
+  private pendingPoints: DrawPoint[] = [];
 
   ngAfterViewInit(): void {
     this.initCanvas();
@@ -165,7 +167,13 @@ export class WhiteboardComponent implements AfterViewInit, OnDestroy {
     if (this.selectedTool === 'pen' || this.selectedTool === 'eraser') {
       this.ctx.beginPath();
       this.ctx.moveTo(this.lastX, this.lastY);
-      this.currentPath.push({ x: this.lastX, y: this.lastY, color: this.selectedColor, width: this.lineWidth, tool: this.selectedTool });
+      
+      const startPoint = { x: this.lastX, y: this.lastY, color: this.selectedColor, width: this.lineWidth, tool: this.selectedTool };
+      this.currentPath.push(startPoint);
+      this.pendingPoints.push(startPoint);
+      
+      // Emit start immediately to establish start point
+      this.flushPendingPoints();
     }
   }
 
@@ -189,9 +197,18 @@ export class WhiteboardComponent implements AfterViewInit, OnDestroy {
       // Free drawing
       this.ctx.lineTo(currentX, currentY);
       this.ctx.stroke();
-      this.currentPath.push({ x: currentX, y: currentY, color: this.selectedColor, width: this.lineWidth, tool: this.selectedTool });
+      
+      const point = { x: currentX, y: currentY, color: this.selectedColor, width: this.lineWidth, tool: this.selectedTool };
+      this.currentPath.push(point);
+      this.pendingPoints.push(point);
       this.lastX = currentX;
       this.lastY = currentY;
+
+      // Throttle emission
+      const now = Date.now();
+      if (now - this.lastEmitTime > 50 || this.pendingPoints.length > 5) {
+        this.flushPendingPoints();
+      }
     } else {
       // Shape drawing - restore snapshot and draw preview
       if (this.snapshot) {
@@ -222,15 +239,9 @@ export class WhiteboardComponent implements AfterViewInit, OnDestroy {
     if (this.selectedTool === 'pen' || this.selectedTool === 'eraser') {
       this.ctx.closePath();
       
-      // Emit drawing action for real-time sync
-      if (this.currentPath.length > 0) {
-        this.emitAction({
-          type: 'draw',
-          data: { path: this.currentPath, tool: this.selectedTool },
-          timestamp: Date.now(),
-          userId: this.currentUser
-        });
-      }
+      // Flush any remaining points
+      this.flushPendingPoints();
+
     } else if (this.selectedTool === 'line' || this.selectedTool === 'rectangle' || this.selectedTool === 'circle') {
       // Emit shape action
       const rect = this.canvasRef.nativeElement.getBoundingClientRect();
@@ -253,7 +264,106 @@ export class WhiteboardComponent implements AfterViewInit, OnDestroy {
     this.isDrawing = false;
     this.snapshot = null;
     this.currentPath = [];
+    this.isDrawing = false;
+    this.snapshot = null;
+    this.currentPath = [];
+    this.pendingPoints = [];
     this.saveToHistory();
+  }
+
+  private flushPendingPoints(): void {
+    if (this.pendingPoints.length === 0) return;
+
+    // Send points (including the last point of previous chunk for continuity if needed, 
+    // but canvas lineTo handles simple point lists well enough if we include start point of segment)
+    // Actually, for smooth lines, receiver needs to moveTo first point of chunk.
+    
+    this.emitAction({
+      type: 'draw',
+      data: { path: [...this.pendingPoints], tool: this.selectedTool }, // Send copy
+      timestamp: Date.now(),
+      userId: this.currentUser
+    });
+
+    this.pendingPoints = []; // Clear pending
+    // Keep the last point as start of next chunk if continuous? 
+    // Drawing usually requires [prev, current] to draw a line.
+    // If I clear pending, the next chunk starts with a new point.
+    // So visual gap might appear if I don't bridge them.
+    // Fix: Keep last point in pending
+    if (this.currentPath.length > 0) {
+         this.pendingPoints.push(this.currentPath[this.currentPath.length - 1]);
+    }
+
+    this.lastEmitTime = Date.now();
+  }
+
+  handleRemoteAction(action: WhiteboardAction): void {
+    if (!this.ctx) return;
+
+    switch (action.type) {
+      case 'draw':
+        this.drawRemotePath(action.data);
+        break;
+      case 'clear':
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.fillRect(0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
+        this.saveToHistory(); // Save clear to history
+        break;
+      case 'text':
+        this.ctx.fillStyle = action.data.color;
+        this.ctx.font = `${action.data.fontSize}px Arial`;
+        this.ctx.fillText(action.data.text, action.data.x, action.data.y);
+        this.saveToHistory();
+        break;
+      case 'shape':
+        this.drawRemoteShape(action.data);
+        this.saveToHistory();
+        break;
+    }
+  }
+
+  private drawRemotePath(data: any): void {
+    if (!data.path || data.path.length === 0) return;
+
+    const path = data.path;
+    this.ctx.beginPath();
+    
+    // Move to first point
+    this.ctx.moveTo(path[0].x, path[0].y);
+
+    for (let i = 1; i < path.length; i++) {
+        this.ctx.strokeStyle = data.tool === 'eraser' ? '#FFFFFF' : path[i].color;
+        this.ctx.lineWidth = data.tool === 'eraser' ? path[i].width * 2 : path[i].width;
+        this.ctx.lineTo(path[i].x, path[i].y);
+        
+        // We need to stroke each segment or group if colors/widths could change (though usually they don't in one stroke)
+        // But for simplicity of 'tool' property which is per-chunk in my data structure:
+    }
+    this.ctx.stroke();
+    // Do not closePath for freehand usually
+  }
+
+  private drawRemoteShape(data: any): void {
+    this.ctx.strokeStyle = data.color;
+    this.ctx.lineWidth = data.width;
+    this.ctx.beginPath();
+
+    if (data.tool === 'line') {
+      this.ctx.moveTo(data.startX, data.startY);
+      this.ctx.lineTo(data.endX, data.endY);
+      this.ctx.stroke();
+    } else if (data.tool === 'rectangle') {
+      const width = data.endX - data.startX;
+      const height = data.endY - data.startY;
+      this.ctx.strokeRect(data.startX, data.startY, width, height);
+    } else if (data.tool === 'circle') {
+      const radius = Math.sqrt(
+        Math.pow(data.endX - data.startX, 2) + Math.pow(data.endY - data.startY, 2)
+      );
+      this.ctx.arc(data.startX, data.startY, radius, 0, 2 * Math.PI);
+      this.ctx.stroke();
+    }
   }
 
   selectTool(tool: 'pen' | 'eraser' | 'line' | 'rectangle' | 'circle' | 'text'): void {
