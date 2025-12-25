@@ -58,14 +58,15 @@
             <video #localVideo autoplay playsinline muted [class.hidden]="!isVideoEnabled"></video>
             <div class="avatar-placeholder" *ngIf="!isVideoEnabled">
               <div class="avatar-circle">
-                <span class="avatar-initial">{{ getInitial(currentUserIdentity) }}</span>
+                 <img *ngIf="currentUserAvatar" [src]="currentUserAvatar" class="avatar-img" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                 <span *ngIf="!currentUserAvatar" class="avatar-initial">{{ getInitial(currentUserName) }}</span>
           </div>
         </div>
         <audio #localAudio autoplay></audio>
         <div class="raised-hand-indicator" *ngIf="isHandRaised">
           <span class="material-icons">pan_tool</span>
         </div>
-        <div class="video-label">You (Local)</div>
+        <div class="video-label">{{ currentUserName }} (You) {{ userRole === 'teacher' ? '★ Host' : '' }}</div>
       </div>          <!-- Remote Participants -->
           <div 
             class="video-tile remote-video" 
@@ -80,7 +81,8 @@
             ></video>
             <div class="avatar-placeholder" *ngIf="!isParticipantVideoEnabled(participant)">
               <div class="avatar-circle">
-                <span class="avatar-initial">{{ getInitial(participant.identity) }}</span>
+                <img *ngIf="getParticipantAvatar(participant)" [src]="getParticipantAvatar(participant)" class="avatar-img" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                <span *ngIf="!getParticipantAvatar(participant)" class="avatar-initial">{{ getInitial(participant.name || participant.identity) }}</span>
               </div>
             </div>
             <audio 
@@ -90,7 +92,7 @@
             <div class="raised-hand-indicator" *ngIf="isHandRaisedFor(participant.identity)">
               <span class="material-icons">pan_tool</span>
             </div>
-            <div class="video-label">{{ getParticipantDisplayName(participant.identity) }}</div>
+            <div class="video-label">{{ participant.name || participant.identity }} {{ isHost(participant) ? '★ Host' : '' }}</div>
           </div>
 
           <!-- Remote Screen Shares -->
@@ -156,11 +158,12 @@
             <!-- Local Participant -->
             <div class="participant-item">
               <div class="participant-avatar">
-                <span class="avatar-text">{{ getInitial(currentUserIdentity) }}</span>
+                <img *ngIf="currentUserAvatar" [src]="currentUserAvatar" class="avatar-img" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                <span *ngIf="!currentUserAvatar" class="avatar-text">{{ getInitial(currentUserName) }}</span>
               </div>
               <div class="participant-info">
-                <span class="participant-name">You</span>
-                <span class="participant-role">Host</span>
+                <span class="participant-name">{{ currentUserName }} (You)</span>
+                <span class="participant-role">{{ userRole === 'teacher' ? 'Host' : 'Student' }}</span>
               </div>
               <div class="participant-status">
                 <span class="material-icons" [class.muted]="!isAudioEnabled">
@@ -175,11 +178,12 @@
             <!-- Remote Participants -->
             <div class="participant-item" *ngFor="let participant of connectionState.remoteParticipants">
               <div class="participant-avatar">
-                <span class="avatar-text">{{ getInitial(participant.identity) }}</span>
+                <img *ngIf="getParticipantAvatar(participant)" [src]="getParticipantAvatar(participant)" class="avatar-img" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                <span *ngIf="!getParticipantAvatar(participant)" class="avatar-text">{{ getInitial(participant.name || participant.identity) }}</span>
               </div>
               <div class="participant-info">
-                <span class="participant-name">{{ getParticipantDisplayName(participant.identity) }}</span>
-                <span class="participant-role">Participant</span>
+                <span class="participant-name">{{ participant.name || participant.identity }}</span>
+                <span class="participant-role">{{ isHost(participant) ? 'Host' : 'Student' }}</span>
               </div>
               <div class="participant-status">
                 <span class="material-icons">mic</span>

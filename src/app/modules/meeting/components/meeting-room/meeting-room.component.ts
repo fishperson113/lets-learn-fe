@@ -70,6 +70,12 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   // Role & Permissions
   userRole: 'teacher' | 'student' = 'student';
   currentUserAvatar: string = '';
+  currentUserName: string = '';
+
+  getCurrentUserAvatar(): string {
+    if (this.currentUserAvatar) return this.currentUserAvatar;
+    return 'https://via.placeholder.com/40/607D8B/FFFFFF?text=' + this.getInitial(this.currentUserName || 'You');
+  }
 
 
   private destroy$ = new Subject<void>();
@@ -197,6 +203,8 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       this.roomName = response.roomName;
       this.userRole = (response.role === 'teacher') ? 'teacher' : 'student';
       this.currentUserAvatar = response.avatarUrl || '';
+      this.currentUserName = response.name || 'User';
+      this.currentUserIdentity = response.name || 'User'; // Or keep unique ID if needed, but for display using name
       
       // Auto-join with fetched token
       await this.joinRoom();
@@ -703,6 +711,33 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   isParticipantSpeaking(participantIdentity: string): boolean {
     return this.speakingParticipants.has(participantIdentity);
+  }
+
+  getParticipantMetadata(participant: RemoteParticipant | any): { role: string; avatarUrl: string } {
+    try {
+      if (participant === 'local') {
+          return { role: this.userRole, avatarUrl: this.currentUserAvatar };
+      }
+      if (participant && participant.metadata) {
+        return JSON.parse(participant.metadata);
+      }
+    } catch (e) {
+      console.error('Failed to parse participant metadata', e);
+    }
+    return { role: 'student', avatarUrl: '' }; // Default
+  }
+
+  isHost(participant: RemoteParticipant | any): boolean {
+    if (participant === 'local') {
+        return this.userRole === 'teacher';
+    }
+    const meta = this.getParticipantMetadata(participant);
+    return meta.role === 'teacher';
+  }
+
+  getParticipantAvatar(participant: RemoteParticipant): string {
+      const meta = this.getParticipantMetadata(participant);
+      return meta.avatarUrl || '';
   }
 
   isHandRaisedFor(identity: string): boolean {

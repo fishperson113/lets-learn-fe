@@ -2,11 +2,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { FormControlField } from '@shared/helper/form.helper';
 
 export const profileFormSchema = {
-  username: new FormControl('', [
-    Validators.required,
-    Validators.minLength(3),
-    Validators.pattern(/^[a-zA-Z0-9_ ]+$/),
-  ]),
+  username: new FormControl(''),
   email: new FormControl('', [
     Validators.required,
     Validators.email,
