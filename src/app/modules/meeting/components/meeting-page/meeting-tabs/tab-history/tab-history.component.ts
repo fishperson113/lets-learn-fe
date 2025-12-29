@@ -1,20 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-interface MeetingSession {
-  id: string;
-  date: Date;
-  duration: number; // minutes
-  attendees: number;
-}
-
-interface PastPoll {
-  id: string;
-  question: string;
-  date: Date;
-  totalVotes: number;
-  winner: string;
-}
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { MeetingTopic } from '@shared/models/topic';
+import { MeetingHistory } from '@shared/models/meeting';
+import { BarChartSegment } from '@shared/components/charts/bar-chart/bar-chart.component';
 
 @Component({
   selector: 'app-tab-history',
@@ -22,29 +9,57 @@ interface PastPoll {
   templateUrl: './tab-history.component.html',
   styleUrls: ['./tab-history.component.scss']
 })
-export class TabHistoryComponent implements OnInit {
+export class TabHistoryComponent implements OnInit, OnChanges {
+  @Input() topic: MeetingTopic | null = null;
   
-  sessions: MeetingSession[] = [
-    { id: '1', date: new Date(Date.now() - 86400000), duration: 45, attendees: 12 },
-    { id: '2', date: new Date(Date.now() - 172800000), duration: 60, attendees: 15 }
-  ];
+  chartSegments: BarChartSegment[] = [];
 
-  polls: PastPoll[] = [
-    { id: 'p1', question: 'What is 2+2?', date: new Date(Date.now() - 86400000), totalVotes: 12, winner: '4' },
-    { id: 'p2', question: 'Best framework?', date: new Date(Date.now() - 172800000), totalVotes: 15, winner: 'Angular' }
-  ];
+  get sessions(): MeetingHistory[] {
+    return this.topic?.data?.histories || [];
+  }
 
   constructor() {}
 
-  ngOnInit(): void {}
-
-  exportSession(id: string) {
-    console.log('Exporting session', id);
-    alert('Exporting attendance for session ' + id);
+  ngOnInit(): void {
+    this.updateChartData();
   }
 
-  exportPoll(id: string) {
-    console.log('Exporting poll', id);
-    alert('Exporting results for poll ' + id);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['topic']) {
+      this.updateChartData();
+    }
+  }
+
+  private updateChartData() {
+    if (!this.sessions.length) {
+      this.chartSegments = [];
+      return;
+    }
+
+    // Sort sessions by date descending (newest first) for list, but maybe ascending for chart?
+    // Let's take last 5 sessions for the chart for clarity, or all if few.
+    // Chart: Duration per session
+    this.chartSegments = this.sessions
+      .slice(0, 10) // Limit to 10 most recent
+      .map(session => ({
+        label: new Date(session.startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        value: this.getDuration(session),
+        color: '#42A5F5' // Blue color
+      }));
+  }
+
+  exportSession(session: MeetingHistory) {
+    if (session.attendanceCsvUrl) {
+      window.open(session.attendanceCsvUrl, '_blank');
+    } else {
+      alert('No attendance record available for this session.');
+    }
+  }
+
+  getDuration(session: MeetingHistory): number {
+      if (!session.endTime) return 0;
+      const start = new Date(session.startTime).getTime();
+      const end = new Date(session.endTime).getTime();
+      return Math.round((end - start) / 1000 / 60); // minutes
   }
 }

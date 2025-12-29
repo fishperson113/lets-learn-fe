@@ -82,12 +82,13 @@ export class TabMeetingComponent implements OnInit, OnChanges {
 
   // Helper method to get avatar from comment
   getAvatar(comment: Comment): string {
-    return comment.user?.avatar || 'https://via.placeholder.com/40/607D8B/FFFFFF?text=?';
+    return comment.user?.avatar || `https://ui-avatars.com/api/?name=?&background=607D8B&color=fff&size=40`;
   }
 
   // Get current user avatar for comment input
   getCurrentUserAvatar(): string {
-    return this.currentUser?.avatar || 'https://via.placeholder.com/40/607D8B/FFFFFF?text=You';
+    // If we have a real avatar, use it. Otherwise use a placeholder with initials/text
+    return this.currentUser?.avatar || `https://ui-avatars.com/api/?name=You&background=607D8B&color=fff&size=40`;
   }
 
   // Method to add new comment

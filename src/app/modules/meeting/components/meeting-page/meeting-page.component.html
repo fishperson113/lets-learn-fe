@@ -5,7 +5,7 @@
   } @else if(selectedTab === tabs.SETTINGS && !isStudent) {
   <tab-setting [topic]="topic" />
   } @else if(selectedTab === tabs.HISTORY && !isStudent) {
-  <app-tab-history />
+  <app-tab-history [topic]="topic" />
   }
 </topic-page-layout>
 }

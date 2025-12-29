@@ -12,72 +12,152 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 
     h3 {
-      margin: 0 0 16px 0;
+      margin: 0 0 24px 0;
       color: #1a1a1a;
       font-size: 18px;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .table-wrapper {
-      overflow-x: auto;
-    }
-
-    .data-table {
+    .chart-container {
+      margin-bottom: 32px;
+      height: 250px;
       width: 100%;
-      border-collapse: collapse;
-      
-      th, td {
-        padding: 12px 16px;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-      }
-      
-      th {
-        color: #666;
-        font-weight: 500;
-        font-size: 13px;
-        text-transform: uppercase;
-        background: #fafafa;
-      }
-      
-      td {
-        color: #333;
-        font-size: 14px;
-      }
-      
-      tr:last-child td {
-        border-bottom: none;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .session-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .session-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #fff;
+      border: 1px solid #edf2f7;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: #bbdefb;
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.08);
+        transform: translateY(-1px);
       }
 
-      .col-question {
-        max-width: 300px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+      .session-date-col {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 250px;
 
-      .badge {
-        background: #e3f2fd;
-        color: #1565C0;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        color: #666;
-        cursor: pointer;
-        padding: 4px;
-        border-radius: 4px;
-        transition: all 0.2s;
-        
-        &:hover {
-          background: #f0f0f0;
-          color: #2196F3;
+        i {
+          color: #90a4ae;
+          font-size: 20px;
         }
+
+        .date {
+          color: #2c3e50;
+          font-weight: 500;
+          font-size: 15px;
+        }
+      }
+
+      .session-stats-col {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1;
+        justify-content: center;
+
+        .stat-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: #f8f9fa;
+          padding: 6px 12px;
+          border-radius: 20px;
+          color: #546e7a;
+          font-size: 13px;
+          border: 1px solid #eee;
+
+          i {
+            font-size: 16px;
+            color: #78909c;
+          }
+        }
+      }
+
+      .session-actions-col {
+        min-width: 160px;
+        display: flex;
+        justify-content: flex-end;
+
+        .btn-download {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          border-radius: 6px;
+          border: 1px solid #e3f2fd;
+          background: #e3f2fd;
+          color: #1976d2;
+          font-weight: 500;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          i {
+            font-size: 18px;
+          }
+
+          &:hover:not(:disabled) {
+            background: #bbdefb;
+            border-color: #90caf9;
+          }
+
+          &:disabled {
+            background: #f5f5f5;
+            border-color: #eee;
+            color: #bdbdbd;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 0;
+      color: #90a4ae;
+
+      .empty-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+
+        i {
+          font-size: 32px;
+          color: #cfd8dc;
+        }
+      }
+
+      p {
+        margin: 0;
+        font-size: 15px;
       }
     }
   }

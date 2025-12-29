@@ -74,7 +74,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
 
   getCurrentUserAvatar(): string {
     if (this.currentUserAvatar) return this.currentUserAvatar;
-    return 'https://via.placeholder.com/40/607D8B/FFFFFF?text=' + this.getInitial(this.currentUserName || 'You');
+    return `https://ui-avatars.com/api/?name=${this.getInitial(this.currentUserName || 'You')}&background=607D8B&color=FFFFFF&size=40`;
   }
 
 
@@ -238,6 +238,49 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     console.log('Current URL:', this.router.url);
     console.log('CourseId:', this.courseId);
     console.log('TopicId:', this.topicId);
+
+    // Save history if teacher
+    if (this.userRole === 'teacher' && this.topicId && this.courseId) {
+       try {
+         // Determine start time - use attendance record of current user (teacher)
+         const myAttendance = this.attendanceRecords.get(this.currentUserIdentity);
+         const startTime = myAttendance ? new Date(myAttendance.firstJoinTime).toISOString() : new Date().toISOString();
+         const endTime = new Date().toISOString();
+         const attendeeCount = this.attendanceRecords.size;
+
+         // Generate and upload attendance CSV
+         let csvUrl = '';
+         try {
+           const csvContent = this.generateAttendanceCsv();
+           const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+           const filename = `attendance_${this.courseId}_${this.topicId}_${timestamp}.csv`;
+           const file = new File([csvContent], filename, { type: 'text/csv' });
+           
+           const uploadResult = await import('../../../../shared/api/cloudinary.api').then(api => 
+             api.UploadCloudinaryFile(file)
+           );
+           
+           if (uploadResult && uploadResult.secure_url) {
+             csvUrl = uploadResult.secure_url;
+             console.log('Attendance CSV uploaded:', csvUrl);
+           }
+         } catch (uploadErr) {
+           console.error('Failed to upload attendance CSV', uploadErr);
+         }
+
+         await import('../../api/meeting.api').then(api => 
+           api.SaveMeetingHistory(this.topicId!, this.courseId!, {
+             startTime,
+             endTime,
+             attendeeCount,
+             attendanceCsvUrl: csvUrl
+           })
+         );
+         console.log('Meeting history saved');
+       } catch (err) {
+         console.error('Failed to save meeting history', err);
+       }
+    }
     
     await this.liveKitService.disconnect();
     
@@ -329,6 +372,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     if (this.showMeetingDetails) {
       this.showParticipants = false;
       this.showChat = false;
+      this.showPolls = false;
     }
   }
 
@@ -337,6 +381,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     if (this.showParticipants) {
       this.showMeetingDetails = false;
       this.showChat = false;
+      this.showPolls = false;
     }
   }
 
@@ -758,6 +803,29 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     return this.raisedHands.has(identity);
   }
 
+  private generateAttendanceCsv(): string {
+    const headers = ["Name,First Join Time,Last Leave Time,Status,Total Duration (min)"];
+    const rows: string[] = [...headers];
+    const now = Date.now();
+
+    this.attendanceRecords.forEach(record => {
+      // Calculate total duration
+      let totalDurationMs = 0;
+      record.sessions.forEach(session => {
+        const end = session.end || (record.status === 'Active' ? now : session.start);
+        totalDurationMs += (end - session.start);
+      });
+      
+      const durationMin = (totalDurationMs / 60000).toFixed(1);
+      const joinTime = new Date(record.firstJoinTime).toLocaleTimeString();
+      const leaveTime = record.lastLeaveTime ? new Date(record.lastLeaveTime).toLocaleTimeString() : '-';
+      
+      rows.push(`${record.name},${joinTime},${leaveTime},${record.status},${durationMin}`);
+    });
+
+    return rows.join('\n');
+  }
+
   // Attendance Tracking Helpers
   private trackParticipantJoin(identity: string, name: string): void {
     const now = Date.now();
@@ -793,27 +861,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   }
 
   exportAttendance(): void {
-    const now = Date.now();
-    const csvRows: string[] = [];
-    csvRows.push("Name,First Join Time,Last Leave Time,Status,Total Duration (min)");
-
-    this.attendanceRecords.forEach(record => {
-        // Calculate total duration
-        let totalDurationMs = 0;
-        record.sessions.forEach(session => {
-            const end = session.end || now;
-            totalDurationMs += (end - session.start);
-        });
-        
-        const durationMin = (totalDurationMs / 60000).toFixed(1);
-        const joinTime = new Date(record.firstJoinTime).toLocaleTimeString();
-        const leaveTime = record.lastLeaveTime ? new Date(record.lastLeaveTime).toLocaleTimeString() : '-';
-        
-        csvRows.push(`${record.name},${joinTime},${leaveTime},${record.status},${durationMin}`);
-    });
-    
-    // Generate CSV
-    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+    const csvContent = "data:text/csv;charset=utf-8," + this.generateAttendanceCsv();
       
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");

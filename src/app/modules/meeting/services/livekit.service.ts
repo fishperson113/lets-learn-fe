@@ -14,7 +14,8 @@ export interface LiveKitConnectionState {
 
 @Injectable()
 export class LiveKitService implements OnDestroy {
-  private room: Room | null = null;
+  private _room: Room | null = null;
+  get activeRoom(): Room | null { return this._room; }
   private connectionStateSubject = new BehaviorSubject<LiveKitConnectionState>({
     isConnecting: false,
     isConnected: false,
@@ -39,7 +40,7 @@ export class LiveKitService implements OnDestroy {
    * Connect to LiveKit room with token
    */
   async connect(token: string, roomName?: string): Promise<void> {
-    if (this.room?.state === 'connected') {
+    if (this._room?.state === 'connected') {
       console.warn('Already connected to a room');
       return;
     }
@@ -47,7 +48,7 @@ export class LiveKitService implements OnDestroy {
     this.updateConnectionState({ isConnecting: true, error: null });
 
     try {
-      this.room = new Room({
+      this._room = new Room({
         adaptiveStream: true,
         dynacast: true,
       });
@@ -55,7 +56,7 @@ export class LiveKitService implements OnDestroy {
       this.setupRoomEventListeners();
 
       const room = roomName || environment.LIVEKIT_DEFAULT_ROOM;
-      await this.room.connect(environment.LIVEKIT_WS_URL, token);
+      await this._room.connect(environment.LIVEKIT_WS_URL, token);
 
       console.log('Connected to room:', room);
 
@@ -64,7 +65,7 @@ export class LiveKitService implements OnDestroy {
       let microphoneEnabled = false;
 
       try {
-        await this.room.localParticipant.setCameraEnabled(true);
+        await this._room.localParticipant.setCameraEnabled(true);
         cameraEnabled = true;
         console.log('Camera enabled successfully');
       } catch (error) {
@@ -72,7 +73,7 @@ export class LiveKitService implements OnDestroy {
       }
 
       try {
-        await this.room.localParticipant.setMicrophoneEnabled(true);
+        await this._room.localParticipant.setMicrophoneEnabled(true);
         microphoneEnabled = true;
         console.log('Microphone enabled successfully');
       } catch (error) {
@@ -86,9 +87,9 @@ export class LiveKitService implements OnDestroy {
       this.updateConnectionState({
         isConnecting: false,
         isConnected: true,
-        room: this.room,
-        localParticipant: this.room.localParticipant,
-        remoteParticipants: Array.from(this.room.remoteParticipants.values()),
+        room: this._room,
+        localParticipant: this._room.localParticipant,
+        remoteParticipants: Array.from(this._room.remoteParticipants.values()),
       });
     } catch (error: any) {
       console.error('Failed to connect to LiveKit room:', error);
@@ -105,9 +106,9 @@ export class LiveKitService implements OnDestroy {
    * Disconnect from the current room
    */
   async disconnect(): Promise<void> {
-    if (this.room) {
-      await this.room.disconnect();
-      this.room = null;
+    if (this._room) {
+      await this._room.disconnect();
+      this._room = null;
       this.updateConnectionState({
         isConnecting: false,
         isConnected: false,
@@ -123,10 +124,10 @@ export class LiveKitService implements OnDestroy {
    * Enable/disable local video
    */
   async toggleVideo(enabled: boolean): Promise<boolean> {
-    if (!this.room) return false;
+    if (!this._room) return false;
     
     try {
-      await this.room.localParticipant.setCameraEnabled(enabled);
+      await this._room.localParticipant.setCameraEnabled(enabled);
       console.log(`Camera ${enabled ? 'enabled' : 'disabled'} successfully`);
       return true;
     } catch (error) {
@@ -139,10 +140,10 @@ export class LiveKitService implements OnDestroy {
    * Enable/disable local audio
    */
   async toggleAudio(enabled: boolean): Promise<boolean> {
-    if (!this.room) return false;
+    if (!this._room) return false;
     
     try {
-      await this.room.localParticipant.setMicrophoneEnabled(enabled);
+      await this._room.localParticipant.setMicrophoneEnabled(enabled);
       console.log(`Microphone ${enabled ? 'enabled' : 'disabled'} successfully`);
       return true;
     } catch (error) {
@@ -155,10 +156,10 @@ export class LiveKitService implements OnDestroy {
    * Enable/disable screen sharing
    */
   async toggleScreenShare(enabled: boolean): Promise<boolean> {
-    if (!this.room) return false;
+    if (!this._room) return false;
     
     try {
-      await this.room.localParticipant.setScreenShareEnabled(enabled);
+      await this._room.localParticipant.setScreenShareEnabled(enabled);
       console.log(`Screen share ${enabled ? 'enabled' : 'disabled'} successfully`);
       return true;
     } catch (error) {
@@ -171,14 +172,14 @@ export class LiveKitService implements OnDestroy {
    * Get current room instance
    */
   getRoom(): Room | null {
-    return this.room;
+    return this._room;
   }
 
   /**
    * Send data to all participants (for whiteboard sync)
    */
   async sendData(data: any): Promise<void> {
-    if (!this.room) {
+    if (!this._room) {
       console.warn('Cannot send data: not connected to room');
       return;
     }
@@ -188,7 +189,7 @@ export class LiveKitService implements OnDestroy {
       const dataString = JSON.stringify(data);
       const payload = encoder.encode(dataString);
       
-      await this.room.localParticipant.publishData(payload, {
+      await this._room.localParticipant.publishData(payload, {
         reliable: true,
         destinationIdentities: [], // Empty array means broadcast to all
       });
@@ -203,21 +204,21 @@ export class LiveKitService implements OnDestroy {
    * Setup event listeners for room events
    */
   private setupRoomEventListeners(): void {
-    if (!this.room) return;
+    if (!this._room) return;
 
-    this.room.on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
+    this._room.on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
       console.log('Participant connected:', participant.identity);
       this.participantConnectedSubject.next(participant);
       this.updateRemoteParticipants();
     });
 
-    this.room.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {
+    this._room.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {
       console.log('Participant disconnected:', participant.identity);
       this.participantDisconnectedSubject.next(participant);
       this.updateRemoteParticipants();
     });
 
-    this.room.on(RoomEvent.Disconnected, () => {
+    this._room.on(RoomEvent.Disconnected, () => {
       console.log('Disconnected from room');
       this.updateConnectionState({
         isConnecting: false,
@@ -228,21 +229,21 @@ export class LiveKitService implements OnDestroy {
       });
     });
 
-    this.room.on(RoomEvent.Reconnecting, () => {
+    this._room.on(RoomEvent.Reconnecting, () => {
       console.log('Reconnecting to room...');
       this.updateConnectionState({ isConnecting: true });
     });
 
-    this.room.on(RoomEvent.Reconnected, () => {
+    this._room.on(RoomEvent.Reconnected, () => {
       console.log('Reconnected to room');
       this.updateConnectionState({ isConnecting: false, isConnected: true });
     });
 
-    this.room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+    this._room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
       console.log('Track subscribed:', track.kind, 'from', participant.identity);
     });
 
-    this.room.on(RoomEvent.DataReceived, (payload: Uint8Array, participant?: RemoteParticipant) => {
+    this._room.on(RoomEvent.DataReceived, (payload: Uint8Array, participant?: RemoteParticipant) => {
       try {
         const decoder = new TextDecoder();
         const dataString = decoder.decode(payload);
@@ -262,9 +263,9 @@ export class LiveKitService implements OnDestroy {
    * Update remote participants list
    */
   private updateRemoteParticipants(): void {
-    if (this.room) {
+    if (this._room) {
       this.updateConnectionState({
-        remoteParticipants: Array.from(this.room.remoteParticipants.values()),
+        remoteParticipants: Array.from(this._room.remoteParticipants.values()),
       });
     }
   }
