@@ -48,3 +48,29 @@ export const GetCourseWork = (
     : `/course/${courseId}/work`;
   return GET(url).then(convertCourseWorkFromResponseData);
 };
+
+// Clone course
+export interface CloneCourseRequest {
+  newCourseId: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  category: string;
+  level: string;
+  price?: number;
+  isPublished: boolean;
+}
+
+export interface CloneCourseResponse {
+  id: string;
+  sourceCourseId: string;
+  sectionCount: number;
+  topicCount: number;
+}
+
+export const CloneCourse = (
+  sourceCourseId: string,
+  request: CloneCourseRequest
+): Promise<CloneCourseResponse> => {
+  return POST(`/course/${sourceCourseId}/clone`, request);
+};
