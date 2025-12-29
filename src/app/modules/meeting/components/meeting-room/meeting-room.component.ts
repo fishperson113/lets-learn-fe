@@ -123,7 +123,8 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
         
         // Attach local tracks when connected
         if (state.isConnected && state.localParticipant) {
-          this.trackParticipantJoin(state.localParticipant.identity, 'You (Host)');
+          this.currentUserIdentity = state.localParticipant.identity;
+          this.trackParticipantJoin(state.localParticipant.identity, this.currentUserName || 'You (Host)');
           setTimeout(() => {
             this.attachLocalTracks();
             this.updateDeviceStates();
@@ -204,7 +205,9 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       this.userRole = (response.role === 'teacher') ? 'teacher' : 'student';
       this.currentUserAvatar = response.avatarUrl || '';
       this.currentUserName = response.name || 'User';
-      this.currentUserIdentity = response.name || 'User'; // Or keep unique ID if needed, but for display using name
+      this.currentUserName = response.name || 'User';
+      // this.currentUserIdentity will be set from LiveKit connection
+
       
       // Auto-join with fetched token
       await this.joinRoom();
@@ -406,6 +409,17 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       type: 'poll-end',
       pollId: 'current' // Simplification
     });
+  }
+
+  handleResetPoll(): void {
+    if (this.userRole !== 'teacher') return;
+    
+    this.pollState = 'idle';
+    this.currentPoll = null;
+    this.pollResults = {};
+    this.totalPollVotes = 0;
+    this.hasVoted = false;
+    this.isPollCreator = false;
   }
 
   private handlePollAction(data: any, senderId: string): void {

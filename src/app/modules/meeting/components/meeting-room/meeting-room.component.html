@@ -40,7 +40,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="main-content" [class.sidebar-open]="showMeetingDetails || showParticipants || showChat">
+    <div class="main-content" [class.sidebar-open]="showMeetingDetails || showParticipants || showChat || showPolls">
       <!-- Video Container -->
       <div class="video-area">
         <div class="video-container">
@@ -115,7 +115,7 @@
       </div> <!-- End video-area -->
 
       <!-- Sidebar Panels -->
-      <div class="sidebar-panel" *ngIf="showMeetingDetails || showParticipants || showChat">
+      <div class="sidebar-panel" *ngIf="showMeetingDetails || showParticipants || showChat || showPolls">
         <!-- Meeting Details Panel -->
         <div class="panel-content" *ngIf="showMeetingDetails">
           <div class="panel-header">
@@ -264,7 +264,8 @@
                  [totalVotes]="totalPollVotes"
                  [isHost]="isPollCreator"
                  [isActive]="pollState === 'active'"
-                 (closePoll)="handleEndPoll()">
+                 (closePoll)="handleEndPoll()"
+                 (resetPoll)="handleResetPoll()">
                </app-poll-result>
             </div>
           </div>

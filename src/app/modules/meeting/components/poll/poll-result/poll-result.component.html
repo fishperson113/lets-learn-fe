@@ -24,7 +24,8 @@
     </div>
   </div>
 
-  <div class="actions" *ngIf="isHost && isActive">
-    <button class="btn-end" (click)="onClose()">End Poll</button>
+  <div class="actions" *ngIf="isHost">
+    <button class="btn-end" *ngIf="isActive" (click)="onClose()">End Poll</button>
+    <button class="btn-reset" *ngIf="!isActive" (click)="onReset()">Create New Poll</button>
   </div>
 </div>

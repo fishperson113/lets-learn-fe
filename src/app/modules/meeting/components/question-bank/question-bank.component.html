@@ -5,49 +5,30 @@
       <span class="material-icons">close</span>
     </button>
   </div>
-
-  <div class="filters">
+  
+  <div class="search-section">
     <div class="search-box">
       <span class="material-icons">search</span>
       <input type="text" [(ngModel)]="searchQuery" placeholder="Search questions...">
     </div>
-    
-    <div class="dropdowns">
-      <select [(ngModel)]="selectedTopic">
-        <option value="All">All Topics</option>
-        <option value="Math">Math</option>
-        <option value="Science">Science</option>
-        <option value="History">History</option>
-      </select>
-      
-      <select [(ngModel)]="selectedDifficulty">
-        <option value="All">All Difficulties</option>
-        <option value="Easy">Easy</option>
-        <option value="Medium">Medium</option>
-        <option value="Hard">Hard</option>
-      </select>
-    </div>
   </div>
+
 
   <div class="question-list">
     <div *ngFor="let item of filteredQuestions" class="question-item">
       <div class="item-content">
         <div class="item-meta">
-          <span class="badge topic">{{ item.topic }}</span>
-          <span class="badge difficulty" [class]="item.difficulty.toLowerCase()">{{ item.difficulty }}</span>
+          <span class="badge type">{{ item.type }}</span>
         </div>
-        <div class="item-question">{{ item.question }}</div>
-        <div class="item-options">
-          <span *ngFor="let opt of item.options" class="opt-preview">{{ opt }}</span>
-        </div>
+        <div class="item-question">{{ item.questionText }}</div>
       </div>
       <button class="add-btn" (click)="onSelect(item)">
-        Add
+        Import
       </button>
     </div>
     
     <div *ngIf="filteredQuestions.length === 0" class="empty-state">
-      No questions found matching your criteria.
+      No questions found.
     </div>
   </div>
 </div>

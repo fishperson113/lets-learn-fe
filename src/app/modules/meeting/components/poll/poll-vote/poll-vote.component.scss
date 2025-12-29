@@ -1,45 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
 .poll-vote-container {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  font-family: 'Inter', sans-serif;
-  animation: slideIn 0.3s ease-out;
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  max-width: 100%;
+  box-shadow: none;
+  border: 1px solid #dfe1e5;
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
 
   .poll-header {
     margin-bottom: 20px;
 
     .poll-badge {
       display: inline-block;
-      background: #e3f2fd;
-      color: #2196F3;
-      padding: 4px 8px;
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 2px 8px;
       border-radius: 4px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      box-shadow: none;
     }
 
     h3 {
-      margin: 0 0 4px 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #1a1a1a;
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: 500;
+      color: #202124;
       line-height: 1.4;
     }
 
     .poll-meta {
       margin: 0;
-      font-size: 12px;
-      color: #666;
+      font-size: 13px;
+      color: #5f6368;
+      font-weight: 400;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
     }
   }
 
@@ -52,25 +55,39 @@
     .poll-option-label {
       display: flex;
       align-items: center;
-      padding: 12px 16px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
+      padding: 10px 14px;
+      background: white;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background 0.1s;
       position: relative;
 
       &:hover {
-        background: #f9f9f9;
-        border-color: #bdbdbd;
+        background: #f8f9fa;
+        border-color: #dadce0;
+        box-shadow: none;
+        transform: none;
       }
 
       &.selected {
-        background: #e3f2fd;
-        border-color: #2196F3;
+        background: #e8f0fe;
+        border-color: #1a73e8; /* Active blue border */
+        box-shadow: none;
         
         .option-text {
-          color: #1565C0;
+          color: #1a73e8;
           font-weight: 500;
+        }
+
+        .check-mark {
+          border-color: #1a73e8;
+          background: #1a73e8;
+          
+          &::after {
+            opacity: 1;
+            transform: scale(1);
+          }
         }
       }
 
@@ -83,35 +100,72 @@
 
       .option-text {
         flex: 1;
-        font-size: 14px;
-        color: #333;
+        font-size: 16px;
+        color: #202124;
+        font-weight: 400;
       }
 
-      // Custom radio/checkbox visualization could go here
+      .check-mark {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #5f6368;
+        border-radius: 50%;
+        margin-left: 12px;
+        position: relative;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: transparent;
+
+        &::after {
+          content: 'check';
+          font-family: 'Material Icons';
+          font-size: 14px;
+          color: white;
+          opacity: 0;
+          transform: scale(0.5);
+          transition: all 0.1s;
+        }
+      }
+    }
+    
+    .checkbox-group .check-mark {
+       border-radius: 2px; /* Square for checkbox */
     }
   }
 
   .poll-actions {
     .btn-submit {
       width: 100%;
-      padding: 12px;
-      background: #2196F3;
+      padding: 10px;
+      background: #1a73e8;
       color: white;
       border: none;
-      border-radius: 8px;
-      font-weight: 600;
+      border-radius: 4px;
+      font-weight: 500;
       font-size: 14px;
       cursor: pointer;
       transition: background 0.2s;
+      box-shadow: none;
+      letter-spacing: normal;
 
       &:hover:not(:disabled) {
-        background: #1976D2;
+        background: #185abc;
+        transform: none;
+        box-shadow: 0 1px 2px rgba(60,64,67,0.3);
+      }
+      
+      &:active:not(:disabled) {
+        background: #174ea6;
       }
 
       &:disabled {
-        background: #e0e0e0;
-        color: #9e9e9e;
-        cursor: not-allowed;
+        background: #f1f3f4;
+        color: #9aa0a6;
+        cursor: default;
+        box-shadow: none;
       }
     }
   }

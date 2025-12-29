@@ -17,6 +17,7 @@ export class PollResultComponent implements OnChanges {
   @Input() isActive: boolean = true;
   
   @Output() closePoll = new EventEmitter<void>();
+  @Output() resetPoll = new EventEmitter<void>();
 
   maxVotes: number = 0;
 
@@ -37,5 +38,9 @@ export class PollResultComponent implements OnChanges {
 
   onClose() {
     this.closePoll.emit();
+  }
+
+  onReset() {
+    this.resetPoll.emit();
   }
 }

@@ -1,16 +1,10 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PollData, PollOption } from '../poll/poll-create/poll-create.component';
-
-interface QuestionBankItem {
-  id: string;
-  topic: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  question: string;
-  options: string[];
-  correctOptionIndex?: number;
-}
+import { PollData } from '../poll/poll-create/poll-create.component';
+import { ActivatedRoute } from '@angular/router';
+import { getQuestionBank } from '@modules/quiz/api/question.api';
+import { Question, QuestionType } from '@shared/models/question';
 
 @Component({
   selector: 'app-question-bank',
@@ -19,60 +13,78 @@ interface QuestionBankItem {
   templateUrl: './question-bank.component.html',
   styleUrls: ['./question-bank.component.scss']
 })
-export class QuestionBankComponent {
+export class QuestionBankComponent implements OnInit {
   @Output() selectQuestion = new EventEmitter<PollData>();
   @Output() close = new EventEmitter<void>();
 
   searchQuery: string = '';
-  selectedTopic: string = 'All';
-  selectedDifficulty: string = 'All';
+  questions: Question[] = [];
+  courseId: string = '';
 
-  // Mock Data
-  questions: QuestionBankItem[] = [
-    {
-      id: '1',
-      topic: 'Math',
-      difficulty: 'Easy',
-      question: 'What is 2 + 2?',
-      options: ['3', '4', '5', '6']
-    },
-    {
-      id: '2',
-      topic: 'Science',
-      difficulty: 'Medium',
-      question: 'What is the powerhouse of the cell?',
-      options: ['Nucleus', 'Mitochondria', 'Ribosome', 'Golgi apparatus']
-    },
-    {
-      id: '3',
-      topic: 'History',
-      difficulty: 'Hard',
-      question: 'In which year did the Titanic sink?',
-      options: ['1910', '1912', '1914', '1918']
-    },
-     {
-      id: '4',
-      topic: 'Math',
-      difficulty: 'Medium',
-      question: 'Square root of 144?',
-      options: ['10', '11', '12', '14']
-    }
-  ];
+  constructor(private route: ActivatedRoute) {}
 
-  get filteredQuestions(): QuestionBankItem[] {
-    return this.questions.filter(q => {
-      const matchesSearch = q.question.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchesTopic = this.selectedTopic === 'All' || q.topic === this.selectedTopic;
-      const matchesDiff = this.selectedDifficulty === 'All' || q.difficulty === this.selectedDifficulty;
-      return matchesSearch && matchesTopic && matchesDiff;
+  ngOnInit(): void {
+    // Try to get courseId from query params first
+    this.route.queryParams.subscribe(params => {
+      if (params['courseId']) {
+        this.courseId = params['courseId'];
+        this.loadQuestions();
+      }
+    });
+
+    // Fallback or alternative if it's a route param (depending on how the meeting page is routed)
+    // Assuming query param based on user context in URL logs: meeting/...?courseId=CS101
+  }
+
+  loadQuestions() {
+    if (!this.courseId) return;
+    
+    getQuestionBank(this.courseId).then(questions => {
+      this.questions = questions || [];
+    }).catch(err => {
+      console.error('Failed to load question bank', err);
     });
   }
 
-  onSelect(item: QuestionBankItem) {
+  get filteredQuestions(): Question[] {
+    if (!this.searchQuery.trim()) {
+      return this.questions;
+    }
+    const query = this.searchQuery.toLowerCase();
+    return this.questions.filter(q => 
+      q.questionText.toLowerCase().includes(query) || 
+      q.questionName.toLowerCase().includes(query)
+    );
+  }
+
+  onSelect(question: Question) {
+    let options: { id: string, text: string }[] = [];
+    let multipleChoice = false;
+
+    if (question.type === QuestionType.CHOICE && question.data && 'choices' in question.data) {
+      options = question.data.choices.map((choice, index) => ({
+        id: `${Date.now()}-${index}`,
+        text: choice.text
+      }));
+      multipleChoice = (question.data as any).multiple;
+    } else if (question.type === QuestionType.TRUE_FALSE) {
+      options = [
+        { id: `${Date.now()}-0`, text: 'True' },
+        { id: `${Date.now()}-1`, text: 'False' }
+      ];
+    } else if (question.type === QuestionType.SHORT_ANSWER) {
+       // Short answer doesn't map well to poll options usually, but we can provide empty ones or specific logic
+       // For now, creating standard empty options as polls usually require options
+       options = [
+         { id: `${Date.now()}-0`, text: 'Yes' },
+         { id: `${Date.now()}-1`, text: 'No' },
+       ];
+    }
+
     const pollData: PollData = {
-      question: item.question,
-      options: item.options.map((opt, index) => ({ id: `${Date.now()}-${index}`, text: opt })),
-      multipleChoice: false,
+      question: question.questionText,
+      options: options,
+      multipleChoice: multipleChoice,
       anonymous: false
     };
     this.selectQuestion.emit(pollData);
