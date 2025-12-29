@@ -10,6 +10,7 @@ import {
   CourseStatisticsDTO 
 } from '../../api/admin.api';
 import { UserService } from '@shared/services/user.service';
+import { AuthService } from '@shared/services/auth.service';
 import { Role } from '@shared/models/user';
 
 @Component({
@@ -37,7 +38,10 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   coursePublishFilter: boolean | null = null;
   courseSearchQuery: string = '';
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     const currentUser = this.userService.getUser();
@@ -194,5 +198,12 @@ export class AdminPageComponent implements OnInit, OnDestroy {
       this.error = err.message || 'Failed to toggle course publish status';
       console.error('Error toggling course publish:', err);
     }
+  }
+
+  logout() {
+    this.authService.logout().then(() => {
+      // Navigation is handled in AuthService or we can force it here if needed
+      // window.location.reload(); // Optional: to ensure clean state
+    });
   }
 }
