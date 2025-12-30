@@ -12,6 +12,7 @@ export interface PollData {
   options: PollOption[];
   multipleChoice: boolean;
   anonymous: boolean;
+  type?: 'Multiple Choice' | 'Short Answer' | 'True/False';
 }
 
 import { QuestionBankComponent } from '../../question-bank/question-bank.component';
@@ -37,6 +38,7 @@ export class PollCreateComponent {
   ];
   multipleChoice: boolean = false;
   anonymous: boolean = false;
+  type: 'Multiple Choice' | 'Short Answer' | 'True/False' = 'Multiple Choice';
 
   addOption() {
     this.options.push({
@@ -46,12 +48,13 @@ export class PollCreateComponent {
   }
 
   removeOption(index: number) {
-    if (this.options.length > 2) {
-      this.options.splice(index, 1);
-    }
+    this.options.splice(index, 1);
   }
 
   isValid(): boolean {
+    if (this.type === 'Short Answer') {
+        return this.question.trim().length > 0;
+    }
     return this.question.trim().length > 0 && 
            this.options.filter(o => o.text.trim().length > 0).length >= 2;
   }
@@ -60,9 +63,10 @@ export class PollCreateComponent {
     if (this.isValid()) {
       this.createPoll.emit({
         question: this.question,
-        options: this.options.filter(o => o.text.trim().length > 0),
+        options: this.type === 'Short Answer' ? [] : this.options.filter(o => o.text.trim().length > 0),
         multipleChoice: this.multipleChoice,
-        anonymous: this.anonymous
+        anonymous: this.anonymous,
+        type: this.type
       });
     }
   }
@@ -80,5 +84,6 @@ export class PollCreateComponent {
     this.options = data.options;
     this.multipleChoice = data.multipleChoice;
     this.showQuestionBank = false;
+    this.type = data.type || 'Multiple Choice';
   }
 }

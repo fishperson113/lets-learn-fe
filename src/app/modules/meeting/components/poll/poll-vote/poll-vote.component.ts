@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PollData, PollOption } from '../poll-create/poll-create.component';
+import { PollData } from '../poll-create/poll-create.component';
 
 @Component({
   selector: 'app-poll-vote',
@@ -16,8 +16,12 @@ export class PollVoteComponent {
 
   selectedOptionId: string = ''; // For single choice
   selectedOptionIds: { [key: string]: boolean } = {}; // For multiple choice
+  answerText: string = ''; // For short answer
 
   get isValid(): boolean {
+    if (this.poll.type === 'Short Answer') {
+        return this.answerText.trim().length > 0;
+    }
     if (this.poll.multipleChoice) {
       return Object.values(this.selectedOptionIds).some(selected => selected);
     }
@@ -28,7 +32,9 @@ export class PollVoteComponent {
     if (!this.isValid) return;
 
     let votes: string[] = [];
-    if (this.poll.multipleChoice) {
+    if (this.poll.type === 'Short Answer') {
+        votes = [this.answerText];
+    } else if (this.poll.multipleChoice) {
       votes = Object.keys(this.selectedOptionIds).filter(id => this.selectedOptionIds[id]);
     } else {
       votes = [this.selectedOptionId];

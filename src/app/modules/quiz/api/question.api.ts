@@ -29,3 +29,13 @@ export const getQuestionBank = (courseId: string) => {
     res.map(convertQuestionFromResponseData)
   );
 };
+
+export const importBulkQuestions = (file: File, courseId: string) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return POST(`/question/bulk-import?courseId=${courseId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};

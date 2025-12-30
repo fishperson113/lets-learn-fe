@@ -12,6 +12,7 @@ import { PollData } from '../poll-create/poll-create.component';
 export class PollResultComponent implements OnChanges {
   @Input() poll!: PollData;
   @Input() results: { [optionId: string]: number } = {};
+  @Input() textResponses: string[] = [];
   @Input() totalVotes: number = 0;
   @Input() isHost: boolean = false;
   @Input() isActive: boolean = true;

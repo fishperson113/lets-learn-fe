@@ -26,6 +26,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { QuizTopic } from '@shared/models/topic';
 import { ToastrService } from 'ngx-toastr';
 import { UpdateTopic } from '@modules/courses/api/topic.api';
+import { importBulkQuestions } from '@modules/quiz/api/question.api';
 
 export type QuestionElement = {
   index: number;
@@ -62,6 +63,7 @@ export class QuestionBankTableComponent implements OnInit, AfterViewInit, OnChan
     'actions',
   ];
   dataSource = new MatTableDataSource<QuestionElement>([]);
+  isImporting = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -150,6 +152,37 @@ export class QuestionBankTableComponent implements OnInit, AfterViewInit, OnChan
       ]);
     }
     this.dialogService.closeDialog();
+  }
+
+  onImportQuestions(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.isImporting = true;
+      importBulkQuestions(file, this.courseId)
+        .then((res) => {
+          this.toastrService.success(res.message);
+          this.refreshQuestions();
+        })
+        .catch((err) => {
+          this.toastrService.error(err.message || 'Failed to import questions');
+        })
+        .finally(() => {
+          this.isImporting = false;
+        });
+    }
+    // Reset the input value so the same file can be selected again
+    event.target.value = null;
+  }
+
+  refreshQuestions(): void {
+    getQuestionBank(this.courseId).then((questions) => {
+      this.questions = questions && Array.isArray(questions) ? questions : [];
+      const elements = this.convertQuestionsToQuestionElements(this.questions);
+      this.dataSource.data = elements;
+      if (this.paginator) {
+        this.dataSource.paginator = this.paginator;
+      }
+    });
   }
 
   onAddToQuiz(questionId: string) {

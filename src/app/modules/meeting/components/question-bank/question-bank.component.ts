@@ -60,6 +60,7 @@ export class QuestionBankComponent implements OnInit {
   onSelect(question: Question) {
     let options: { id: string, text: string }[] = [];
     let multipleChoice = false;
+    let type: 'Multiple Choice' | 'Short Answer' | 'True/False' = 'Multiple Choice';
 
     if (question.type === QuestionType.CHOICE && question.data && 'choices' in question.data) {
       options = question.data.choices.map((choice, index) => ({
@@ -67,25 +68,24 @@ export class QuestionBankComponent implements OnInit {
         text: choice.text
       }));
       multipleChoice = (question.data as any).multiple;
+      type = 'Multiple Choice';
     } else if (question.type === QuestionType.TRUE_FALSE) {
       options = [
         { id: `${Date.now()}-0`, text: 'True' },
         { id: `${Date.now()}-1`, text: 'False' }
       ];
+      type = 'True/False';
     } else if (question.type === QuestionType.SHORT_ANSWER) {
-       // Short answer doesn't map well to poll options usually, but we can provide empty ones or specific logic
-       // For now, creating standard empty options as polls usually require options
-       options = [
-         { id: `${Date.now()}-0`, text: 'Yes' },
-         { id: `${Date.now()}-1`, text: 'No' },
-       ];
+       type = 'Short Answer';
+       options = []; // No options for short answer
     }
 
     const pollData: PollData = {
       question: question.questionText,
       options: options,
       multipleChoice: multipleChoice,
-      anonymous: false
+      anonymous: false,
+      type: type
     };
     this.selectQuestion.emit(pollData);
   }

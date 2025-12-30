@@ -4,6 +4,15 @@
   </div>
 
   <div class="form-group">
+    <label>Poll Type</label>
+    <select [(ngModel)]="type" class="form-control type-select">
+        <option value="Multiple Choice">Multiple Choice</option>
+        <option value="Short Answer">Short Answer</option>
+        <option value="True/False">True/False</option>
+    </select>
+  </div>
+
+  <div class="form-group">
     <label>Question</label>
     <textarea 
       [(ngModel)]="question" 
@@ -13,7 +22,7 @@
     ></textarea>
   </div>
 
-  <div class="form-group">
+  <div class="form-group" *ngIf="type === 'Multiple Choice'">
     <label>Options</label>
     <div class="option-list">
       <div *ngFor="let option of options; let i = index" class="option-item">
@@ -26,7 +35,6 @@
         <button 
           class="remove-btn" 
           (click)="removeOption(i)" 
-          [disabled]="options.length <= 2"
           title="Remove option"
         >
           <span class="material-icons">close</span>
@@ -36,23 +44,19 @@
     <button class="add-option-btn" (click)="addOption()">
       <span class="material-icons">add_circle_outline</span> Add Another Option
     </button>
-    
+  </div>
+  
+  <div class="form-group" *ngIf="type !== 'Short Answer' && type !== 'True/False'">
     <button class="import-btn" (click)="toggleQuestionBank()">
       <span class="material-icons">library_books</span> Import from Question Bank
     </button>
   </div>
 
-  <div class="settings-group">
+  <div class="settings-group" *ngIf="type === 'Multiple Choice'">
     <label class="checkbox-label">
       <input type="checkbox" [(ngModel)]="multipleChoice">
       <span>Allow multiple choice</span>
     </label>
-    <!-- 
-    <label class="checkbox-label">
-      <input type="checkbox" [(ngModel)]="anonymous">
-      <span>Anonymous voting</span>
-    </label>
-    -->
   </div>
 
   <div class="actions">

@@ -12,6 +12,21 @@
     </app-button>
   </div>
   <div class="actions-container">
+    <input
+      #fileInput
+      type="file"
+      hidden
+      (change)="onImportQuestions($event)"
+      accept=".csv, .docx, .txt, .pdf"
+    />
+    <app-button
+      label="Import"
+      variant="ghost"
+      (onClick)="fileInput.click()"
+      [loading]="isImporting"
+    >
+      <span class="material-symbols-outlined" icon> upload_file </span>
+    </app-button>
     <app-button label="New question" (onClick)="onCreateQuestion()">
       <create-question-dialog />
       <span class="material-symbols-outlined" icon> add_circle </span>

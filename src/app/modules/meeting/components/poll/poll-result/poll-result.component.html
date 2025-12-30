@@ -9,19 +9,30 @@
   </div>
 
   <div class="results-list">
-    <div class="result-item" *ngFor="let option of poll.options">
-      <div class="item-header">
-        <span class="label">{{ option.text }}</span>
-        <span class="count">{{ results[option.id] || 0 }} ({{ getPercentage(option.id) }}%)</span>
-      </div>
-      <div class="progress-track">
-        <div 
-          class="progress-bar" 
-          [style.width.%]="getPercentage(option.id)"
-          [class.winner]="isActive && (results[option.id] || 0) === maxVotes && maxVotes > 0"
-        ></div>
-      </div>
+    <!-- Short Answer List -->
+    <div *ngIf="poll.type === 'Short Answer'" class="text-responses">
+        <div *ngIf="textResponses.length === 0" class="no-responses">No responses yet</div>
+        <div *ngFor="let response of textResponses" class="text-response-item">
+            {{ response }}
+        </div>
     </div>
+
+    <!-- Choie List -->
+    <ng-container *ngIf="poll.type !== 'Short Answer'">
+        <div class="result-item" *ngFor="let option of poll.options">
+        <div class="item-header">
+            <span class="label">{{ option.text }}</span>
+            <span class="count">{{ results[option.id] || 0 }} ({{ getPercentage(option.id) }}%)</span>
+        </div>
+        <div class="progress-track">
+            <div 
+            class="progress-bar" 
+            [style.width.%]="getPercentage(option.id)"
+            [class.winner]="isActive && (results[option.id] || 0) === maxVotes && maxVotes > 0"
+            ></div>
+        </div>
+        </div>
+    </ng-container>
   </div>
 
   <div class="actions" *ngIf="isHost">

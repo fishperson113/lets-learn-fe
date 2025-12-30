@@ -6,8 +6,18 @@
   </div>
 
   <div class="poll-options">
+    <!-- Short Answer -->
+    <div *ngIf="poll.type === 'Short Answer'" class="short-answer-group">
+        <textarea 
+            [(ngModel)]="answerText" 
+            placeholder="Type your answer here..."
+            rows="4"
+            class="poll-textarea"
+        ></textarea>
+    </div>
+
     <!-- Single Choice -->
-    <div *ngIf="!poll.multipleChoice" class="radio-group">
+    <div *ngIf="poll.type !== 'Short Answer' && !poll.multipleChoice" class="radio-group">
       <label *ngFor="let option of poll.options" class="poll-option-label" [class.selected]="selectedOptionId === option.id">
         <input 
           type="radio" 
@@ -21,7 +31,7 @@
     </div>
 
     <!-- Multiple Choice -->
-    <div *ngIf="poll.multipleChoice" class="checkbox-group">
+    <div *ngIf="poll.type !== 'Short Answer' && poll.multipleChoice" class="checkbox-group">
       <label *ngFor="let option of poll.options" class="poll-option-label" [class.selected]="selectedOptionIds[option.id]">
         <input 
           type="checkbox" 

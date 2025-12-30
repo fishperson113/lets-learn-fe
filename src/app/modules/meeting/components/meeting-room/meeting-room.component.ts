@@ -63,11 +63,13 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   pollState: 'idle' | 'active' | 'ended' = 'idle';
   currentPoll: PollData | null = null;
   pollResults: { [optionId: string]: number } = {};
+  pollTextResponses: string[] = [];
   totalPollVotes: number = 0;
   hasVoted: boolean = false;
   isPollCreator: boolean = false;
-  
-  // Role & Permissions
+
+
+
   userRole: 'teacher' | 'student' = 'student';
   currentUserAvatar: string = '';
   currentUserName: string = '';
@@ -413,12 +415,15 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     this.currentPoll = pollData;
     this.pollState = 'active';
     this.pollResults = {};
+    this.pollTextResponses = [];
     this.totalPollVotes = 0;
     this.hasVoted = false;
     this.isPollCreator = true;
     
     // Initialize results count
-    pollData.options.forEach(opt => this.pollResults[opt.id] = 0);
+    if (pollData.type !== 'Short Answer') {
+        pollData.options.forEach(opt => this.pollResults[opt.id] = 0);
+    }
 
     // Broadcast start
     this.liveKitService.sendData({
@@ -438,10 +443,6 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       voterId: this.currentUserIdentity
     });
 
-    // Update local immediately if we want realtime for everyone, 
-    // or wait for host update? Let's update locally for immediate feedback 
-    // but better to allow everyone to calculate.
-    // Simplifying: Everyone calculates results locally based on received votes.
     this.processVote(optionIds);
   }
 
@@ -452,7 +453,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     
     this.liveKitService.sendData({
       type: 'poll-end',
-      pollId: 'current' // Simplification
+      pollId: 'current'
     });
   }
 
@@ -462,6 +463,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     this.pollState = 'idle';
     this.currentPoll = null;
     this.pollResults = {};
+    this.pollTextResponses = [];
     this.totalPollVotes = 0;
     this.hasVoted = false;
     this.isPollCreator = false;
@@ -473,18 +475,20 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
         this.currentPoll = data.poll;
         this.pollState = 'active';
         this.pollResults = {};
+        this.pollTextResponses = [];
         this.totalPollVotes = 0;
         this.hasVoted = false;
         this.isPollCreator = (senderId === this.currentUserIdentity);
-        this.showPolls = true; // Auto-open poll panel
+        this.showPolls = true; 
         
         if (this.currentPoll) {
-          this.currentPoll.options.forEach(opt => this.pollResults[opt.id] = 0);
+             if (this.currentPoll.type !== 'Short Answer') {
+                this.currentPoll.options.forEach(opt => this.pollResults[opt.id] = 0);
+             }
         }
         break;
         
       case 'poll-vote':
-        // If we are showing results real-time to everyone:
         this.processVote(data.optionIds);
         break;
         
@@ -498,6 +502,14 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   private processVote(optionIds: string[]): void {
     if (!this.currentPoll) return;
     
+    if (this.currentPoll.type === 'Short Answer') {
+        if (optionIds && optionIds.length > 0) {
+            this.pollTextResponses.push(optionIds[0]);
+            this.totalPollVotes++;
+        }
+        return;
+    }
+
     optionIds.forEach(id => {
       if (this.pollResults[id] !== undefined) {
         this.pollResults[id]++;
