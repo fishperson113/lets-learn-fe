@@ -140,7 +140,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((participant) => {
         this.handleRemoteParticipant(participant);
-        this.trackParticipantJoin(participant.identity, this.getParticipantDisplayName(participant.identity));
+        this.trackParticipantJoin(participant.identity, participant.name || participant.identity);
       });
 
     this.liveKitService.participantDisconnected$
@@ -241,7 +241,14 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     console.log('CourseId:', this.courseId);
     console.log('TopicId:', this.topicId);
 
-    // Save history if teacher
+    // 1. Disconnect immediately to stop AV/WebRTC
+    try {
+      await this.liveKitService.disconnect();
+    } catch (error) {
+       console.error('Failed to disconnect LiveKit:', error);
+    }
+
+    // 2. Save history if teacher
     if (this.userRole === 'teacher' && this.topicId && this.courseId) {
        try {
          // Determine start time - use attendance record of current user (teacher)
@@ -284,9 +291,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
        }
     }
     
-    await this.liveKitService.disconnect();
-    
-    // Navigate back to meeting page  
+    // 3. Navigate back to meeting page  
     if (this.courseId && this.topicId) {
       // Correct route structure: /courses/:courseId/meeting/:topicId (NO 'topic' segment!)
       const targetRoute = ['/courses', this.courseId, 'meeting', this.topicId];
@@ -765,7 +770,11 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   }
 
   getParticipantDisplayName(identity: string): string {
-    return identity || 'Anonymous';
+    if (identity === this.currentUserIdentity) {
+      return this.currentUserName || 'You';
+    }
+    const participant = this.connectionState.remoteParticipants.find(p => p.identity === identity);
+    return participant?.name || identity || 'Anonymous';
   }
 
   getInitial(name: string): string {
@@ -873,15 +882,17 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   }
 
   exportAttendance(): void {
-    const csvContent = "data:text/csv;charset=utf-8," + this.generateAttendanceCsv();
-      
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = this.generateAttendanceCsv();
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `attendance-full-${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   private scrollChatToBottom(): void {

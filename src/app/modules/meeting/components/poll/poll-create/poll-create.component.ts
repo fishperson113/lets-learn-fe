@@ -52,7 +52,7 @@ export class PollCreateComponent {
   }
 
   isValid(): boolean {
-    if (this.type === 'Short Answer') {
+    if (this.type === 'Short Answer' || this.type === 'True/False') {
         return this.question.trim().length > 0;
     }
     return this.question.trim().length > 0 && 
@@ -61,10 +61,21 @@ export class PollCreateComponent {
 
   onSubmit() {
     if (this.isValid()) {
+      let finalOptions = this.options.filter(o => o.text.trim().length > 0);
+      
+      if (this.type === 'Short Answer') {
+        finalOptions = [];
+      } else if (this.type === 'True/False') {
+        finalOptions = [
+          { id: 'true', text: 'True' },
+          { id: 'false', text: 'False' }
+        ];
+      }
+
       this.createPoll.emit({
         question: this.question,
-        options: this.type === 'Short Answer' ? [] : this.options.filter(o => o.text.trim().length > 0),
-        multipleChoice: this.multipleChoice,
+        options: finalOptions,
+        multipleChoice: this.type === 'Multiple Choice' ? this.multipleChoice : false,
         anonymous: this.anonymous,
         type: this.type
       });
