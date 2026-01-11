@@ -266,7 +266,8 @@
                  [isHost]="isPollCreator"
                  [isActive]="pollState === 'active'"
                  (closePoll)="handleEndPoll()"
-                 (resetPoll)="handleResetPoll()">
+                 (resetPoll)="handleResetPoll()"
+                 (exportPoll)="exportPollResults()">
                </app-poll-result>
             </div>
           </div>
