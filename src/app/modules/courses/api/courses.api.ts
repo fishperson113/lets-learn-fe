@@ -38,6 +38,11 @@ export const JoinCourse = (courseId: string): Promise<void> => {
   return PATCH(`/course/${courseId}/join`);
 };
 
+// Add student to course (Teacher functionality)
+export const AddStudentToCourse = (courseId: string, studentId: string): Promise<void> => {
+  return POST(`/course/${courseId}/student`, { studentId });
+};
+
 // Get working topics of courses (E.g. quizzes, assignments)
 export const GetCourseWork = (
   courseId: string,

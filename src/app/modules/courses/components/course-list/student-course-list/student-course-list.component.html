@@ -5,7 +5,7 @@
   [class.xsmall]="screenSize === 'xsmall'"
   [class.sidebarCollapsed]="isSidebarCollapsed"
 >
-  <joining-code-card (submitCode)="onSubmitCode($event)"></joining-code-card>
+  <!-- Removed joining-code-card - Students can no longer freely join courses -->
   @for(course of courses; track course.id) {
   <student-course-card [course]="course"></student-course-card>
   }

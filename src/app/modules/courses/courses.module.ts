@@ -23,6 +23,7 @@ import { TabCourseStudentComponent } from './components/course-layout/course-tab
 import { TabDashboardStudentComponent } from './components/course-layout/course-tabs/tab-dashboard-student/tab-dashboard-student.component';
 import { AddTopicDialogComponent } from './components/add-topic-dialog/add-topic-dialog.component';
 import { UpdateCourseImageDialogComponent } from './components/update-course-image-dialog/update-course-image-dialog.component';
+import { AddStudentDialogComponent } from './components/add-student-dialog/add-student-dialog.component';
 import { JoinCodeButtonComponent } from './components/course-list/student-course-list/student-course-card/join-code-button/join-code-button.component';
 import { JoinCodeViewComponent } from './components/course-list/student-course-list/student-course-card/join-code-view/join-code-view.component';
 import { JoiningCodeComponent } from './components/course-list/student-course-list/student-course-card/joining-code-card/joining-code-card.component';
@@ -49,6 +50,7 @@ import { StudentCourseCardComponent } from './components/course-list/student-cou
     TabDashboardStudentComponent,
     AddTopicDialogComponent,
     UpdateCourseImageDialogComponent,
+    AddStudentDialogComponent,
     JoinCodeButtonComponent,
     JoinCodeViewComponent,
     JoiningCodeComponent,

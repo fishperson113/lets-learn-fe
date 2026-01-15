@@ -12,8 +12,7 @@
   <div class="course-content">
     <h4>{{ course.title }}</h4>
     <p>{{ course.category }}</p>
-    @if(!hasJoined) {
-    <app-button variant="outline-blue" (click)="onJoinCourse()" label="Join" />
-    }
+    <!-- Removed Join button - Students can no longer freely join courses -->
+    <!-- Teachers will add students to courses from the People tab -->
   </div>
 </div>
