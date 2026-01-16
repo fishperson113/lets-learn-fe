@@ -10,13 +10,14 @@ export const convertAssignmentResponseToRequestData = (
   const { id, data, topicId, studentId } = assignmentResponse;
   const { submittedAt, files, mark, note } = data as AssignmentResponseData;
   let req: any = {
-    id: id.length === 4 ? null : id,
     topicId,
     studentId,
-    submittedAt,
-    cloudinaryFiles: convertCloudinaryFilesToRequestData(files),
-    mark,
-    note,
+    data: {
+      submittedAt,
+      files: convertCloudinaryFilesToRequestData(files),
+      mark,
+      note,
+    }
   };
   return req;
 };
