@@ -22,7 +22,7 @@ export const GetPublicCourses = (): Promise<Course[]> => {
 };
 
 export const GetStudentCourses = (studentId: string): Promise<Course[]> => {
-  return GET(`/course?studentId=${studentId}`);
+  return GET(`/course?userId=${studentId}`);
 };
 
 export const GetTeacherCourses = (userId: string): Promise<Course[]> => {
