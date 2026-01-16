@@ -22,7 +22,7 @@ export const GetPublicCourses = (): Promise<Course[]> => {
 };
 
 export const GetStudentCourses = (studentId: string): Promise<Course[]> => {
-  return GET(`/course?studentId=${studentId}`);
+  return GET(`/course?userId=${studentId}`);
 };
 
 export const GetTeacherCourses = (userId: string): Promise<Course[]> => {
@@ -36,6 +36,11 @@ export const UpdateCourse = (course: Course) => {
 
 export const JoinCourse = (courseId: string): Promise<void> => {
   return PATCH(`/course/${courseId}/join`);
+};
+
+// Add student to course (Teacher functionality)
+export const AddStudentToCourse = (courseId: string, studentId: string): Promise<void> => {
+  return POST(`/course/${courseId}/student`, { studentId });
 };
 
 // Get working topics of courses (E.g. quizzes, assignments)

@@ -130,12 +130,12 @@ export const getTopicTypeOptions = (): TopicTypeOption[] => [
     icon: iconMap.file,
     description: 'Upload and share files with students',
   },
-  {
-    type: TopicType.PAGE,
-    label: 'Page',
-    icon: iconMap.page,
-    description: 'Create informational pages and content',
-  },
+  // {
+  //   type: TopicType.PAGE,
+  //   label: 'Page',
+  //   icon: iconMap.page,
+  //   description: 'Create informational pages and content',
+  // },
 ];
 
 export const getActivityTopicOptions = (): TopicTypeOption[] =>

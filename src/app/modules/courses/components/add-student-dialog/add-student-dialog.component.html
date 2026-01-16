@@ -1,0 +1,40 @@
+<div class="add-student-container">
+  <h3>Add Student</h3>
+  
+  @if(loading) {
+    <div class="loading">Loading...</div>
+  } @else {
+    <input
+      type="text"
+      placeholder="Search students..."
+      [(ngModel)]="searchQuery"
+      (input)="onSearchChange()"
+      class="search-input"
+    />
+
+    <div class="students-list">
+      @if(filteredStudents.length === 0) {
+        <div class="empty">No students found</div>
+      } @else {
+        @for(student of filteredStudents; track student.id) {
+          <div class="student-card" (click)="selectStudent(student)">
+            <img [src]="student.avatar" [alt]="student.username" />
+            <div class="info">
+              <div class="name">{{ student.username }}</div>
+              <div class="email">{{ student.email }}</div>
+            </div>
+            @if(selectedStudent?.id === student.id) {
+              <span class="material-symbols-outlined">check</span>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <div class="actions">
+      <button (click)="onCancel()">Cancel</button>
+      <button (click)="onAdd()" [disabled]="!selectedStudent">Add</button>
+    </div>
+  }
+</div>
+

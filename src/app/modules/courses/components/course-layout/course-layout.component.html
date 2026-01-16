@@ -14,7 +14,7 @@
     [user]="user ? user : null"
   />
   } @else if(selectedTab === tabs.PEOPLE) {
-  <tab-people [course]="course" />
+  <tab-people [course]="course" [canEdit]="!isStudent" />
   } @else if(selectedTab === tabs.DASHBOARD) { @if(!isStudent){
   <tab-dashboard [course]="course" />
   } @else {

@@ -64,6 +64,13 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   currentPoll: PollData | null = null;
   pollResults: { [optionId: string]: number } = {};
   pollTextResponses: string[] = [];
+  pollVotes: Array<{
+    studentId: string;
+    studentName: string;
+    answer: string; // id or text
+    rawAnswer?: string; // For display/logic if needed
+    timestamp: string;
+  }> = [];
   totalPollVotes: number = 0;
   hasVoted: boolean = false;
   isPollCreator: boolean = false;
@@ -140,7 +147,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((participant) => {
         this.handleRemoteParticipant(participant);
-        this.trackParticipantJoin(participant.identity, this.getParticipantDisplayName(participant.identity));
+        this.trackParticipantJoin(participant.identity, participant.name || participant.identity);
       });
 
     this.liveKitService.participantDisconnected$
@@ -241,7 +248,14 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     console.log('CourseId:', this.courseId);
     console.log('TopicId:', this.topicId);
 
-    // Save history if teacher
+    // 1. Disconnect immediately to stop AV/WebRTC
+    try {
+      await this.liveKitService.disconnect();
+    } catch (error) {
+       console.error('Failed to disconnect LiveKit:', error);
+    }
+
+    // 2. Save history if teacher
     if (this.userRole === 'teacher' && this.topicId && this.courseId) {
        try {
          // Determine start time - use attendance record of current user (teacher)
@@ -284,9 +298,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
        }
     }
     
-    await this.liveKitService.disconnect();
-    
-    // Navigate back to meeting page  
+    // 3. Navigate back to meeting page  
     if (this.courseId && this.topicId) {
       // Correct route structure: /courses/:courseId/meeting/:topicId (NO 'topic' segment!)
       const targetRoute = ['/courses', this.courseId, 'meeting', this.topicId];
@@ -424,6 +436,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     if (pollData.type !== 'Short Answer') {
         pollData.options.forEach(opt => this.pollResults[opt.id] = 0);
     }
+    this.pollVotes = []; // Reset votes for new poll
 
     // Broadcast start
     this.liveKitService.sendData({
@@ -443,7 +456,7 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
       voterId: this.currentUserIdentity
     });
 
-    this.processVote(optionIds);
+    this.processVote(optionIds, this.currentUserIdentity, new Date().toISOString());
   }
 
   handleEndPoll(): void {
@@ -462,8 +475,11 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     
     this.pollState = 'idle';
     this.currentPoll = null;
+    this.pollState = 'idle';
+    this.currentPoll = null;
     this.pollResults = {};
     this.pollTextResponses = [];
+    this.pollVotes = [];
     this.totalPollVotes = 0;
     this.hasVoted = false;
     this.isPollCreator = false;
@@ -485,11 +501,12 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
              if (this.currentPoll.type !== 'Short Answer') {
                 this.currentPoll.options.forEach(opt => this.pollResults[opt.id] = 0);
              }
+             this.pollVotes = []; // Reset if we missed the start? Or handle re-join logic ideally
         }
         break;
         
       case 'poll-vote':
-        this.processVote(data.optionIds);
+        this.processVote(data.optionIds, senderId, new Date().toISOString()); // senderId from data channel
         break;
         
       case 'poll-end':
@@ -499,23 +516,124 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
     }
   }
 
-  private processVote(optionIds: string[]): void {
+  private processVote(optionIds: string[], senderId: string, timestamp: string): void {
     if (!this.currentPoll) return;
     
+    const studentName = this.getParticipantDisplayName(senderId);
+    let capturedAnswer = '';
+    let answerNormalized = '';
+
     if (this.currentPoll.type === 'Short Answer') {
         if (optionIds && optionIds.length > 0) {
-            this.pollTextResponses.push(optionIds[0]);
+            capturedAnswer = optionIds[0];
+            answerNormalized = capturedAnswer.trim().toLowerCase();
+            this.pollTextResponses.push(capturedAnswer);
             this.totalPollVotes++;
         }
-        return;
+    } else {
+        optionIds.forEach(id => {
+            if (this.pollResults[id] !== undefined) {
+                this.pollResults[id]++;
+                this.totalPollVotes++;
+                // For MC/TF, usually we store ID, but for CSV we might want the text value?
+                // Or store ID and lookup later. Storing ID for now.
+                capturedAnswer = id;
+                
+                // For normalized:
+                if (this.currentPoll?.type === 'True/False') {
+                    answerNormalized = id.toLowerCase(); // 'true' or 'false'
+                } else {
+                     // Multiple Choice: Map ID to A/B/C? or just keep ID?
+                     // Plan said: A, B, C based on index
+                     const idx = this.currentPoll?.options.findIndex(o => o.id === id) ?? -1;
+                     if (idx !== -1) {
+                         answerNormalized = String.fromCharCode(65 + idx); // 0->A, 1->B
+                     }
+                }
+            }
+        });
     }
 
-    optionIds.forEach(id => {
-      if (this.pollResults[id] !== undefined) {
-        this.pollResults[id]++;
-        this.totalPollVotes++;
+    if (capturedAnswer) {
+        this.pollVotes.push({
+            studentId: senderId,
+            studentName: studentName,
+            answer: capturedAnswer,
+            rawAnswer: capturedAnswer, // duplication for now, simplified
+            timestamp: timestamp
+        });
+    }
+  }
+
+  exportPollResults(): void {
+      if (!this.currentPoll || this.pollVotes.length === 0) {
+          alert("No votes to export.");
+          return;
       }
-    });
+
+      const headers = [
+          "meeting_id", "meeting_name", "poll_id", "poll_question", "poll_type",
+          "student_id", "student_name", "answer", "answer_normalized", "is_correct", "answered_at"
+      ];
+      const rows = [headers.join(",")];
+
+      const meetingId = this.topicId || 'unknown-meeting-id'; // using topicId as meeting_id
+      const pollId = 'poll-' + Date.now(); // Mock ID, real one not available in FE model efficiently
+
+      this.pollVotes.forEach(vote => {
+          // Resolve Answer Text for MC/TF because 'vote.answer' might be an ID
+          let displayAnswer = vote.answer;
+          let answerNormalized = ''; 
+
+          if (this.currentPoll?.type !== 'Short Answer') {
+             const option = this.currentPoll?.options.find(o => o.id === vote.answer);
+             if (option) {
+                 displayAnswer = option.text;
+             }
+             
+             if (this.currentPoll?.type === 'True/False') {
+                 answerNormalized = displayAnswer.toLowerCase();
+             } else {
+                 // Multiple Choice -> A, B, C
+                 const idx = this.currentPoll?.options.findIndex(o => o.id === vote.answer) ?? -1;
+                 if (idx !== -1) {
+                     answerNormalized = String.fromCharCode(65 + idx);
+                 }
+             }
+          } else {
+              // Short Answer
+              answerNormalized = vote.answer.trim().toLowerCase();
+          }
+          
+          // Escape CSV fields
+          const safe = (str: string) => `"${(str || '').replace(/"/g, '""')}"`;
+
+          const row = [
+              safe(meetingId),
+              safe(this.roomName),
+              safe(pollId),
+              safe(this.currentPoll?.question || ''),
+              safe(this.currentPoll?.type || ''),
+              safe(vote.studentId),
+              safe(vote.studentName),
+              safe(displayAnswer),
+              safe(answerNormalized),
+              '', // is_correct (not implemented)
+              safe(vote.timestamp)
+          ];
+          rows.push(row.join(","));
+      });
+
+      const csvContent = rows.join("\n");
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `poll_results_${meetingId}_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
   }
 
   sendReaction(emoji: string): void {
@@ -765,7 +883,11 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   }
 
   getParticipantDisplayName(identity: string): string {
-    return identity || 'Anonymous';
+    if (identity === this.currentUserIdentity) {
+      return this.currentUserName || 'You';
+    }
+    const participant = this.connectionState.remoteParticipants.find(p => p.identity === identity);
+    return participant?.name || identity || 'Anonymous';
   }
 
   getInitial(name: string): string {
@@ -873,15 +995,17 @@ export class MeetingRoomComponent implements OnInit, OnDestroy {
   }
 
   exportAttendance(): void {
-    const csvContent = "data:text/csv;charset=utf-8," + this.generateAttendanceCsv();
-      
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = this.generateAttendanceCsv();
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `attendance-full-${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   private scrollChatToBottom(): void {

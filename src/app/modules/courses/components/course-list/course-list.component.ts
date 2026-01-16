@@ -44,11 +44,15 @@ export class CourseListComponent implements OnInit {
     const user = this.userService.getUser();
     if (!user) return;
     let res: Course[] = [];
-    if (user.role === Role.TEACHER) res = await GetTeacherCourses(user.id);
-    else if (user.role === Role.STUDENT) res = await GetStudentCourses(user.id);
-    //Nen cho la` neu' role STUDENT thi` se hien thi. ca course public va` course da~ dang ky
-    //Hien tai. chi hien course da dang ky
-    else res = await GetPublicCourses();
+    if (user.role === Role.TEACHER) {
+      res = await GetTeacherCourses(user.id);
+    } else if (user.role === Role.STUDENT) {
+      // Only show private courses (enrolled courses) for students
+      const studentCourses = await GetStudentCourses(user.id);
+      res = studentCourses.filter(course => !course.isPublished);
+    } else {
+      res = await GetPublicCourses();
+    }
     this.courses = res;
   }
 

@@ -61,8 +61,7 @@ export class CloneCourseFormComponent implements OnInit {
         validators: [Validators.required],
         nonNullable: true,
       }),
-      visibility: new FormControl(null, {
-        validators: [Validators.required],
+      visibility: new FormControl('0', {
         nonNullable: true,
       }),
     });
@@ -128,7 +127,7 @@ export class CloneCourseFormComponent implements OnInit {
       category: formData.category,
       level: formData.level,
       price: this.selectedCourse?.price || 0,
-      isPublished: formData.visibility === '1',
+      isPublished: false, // Always private by default
     };
 
     this.loading = true;

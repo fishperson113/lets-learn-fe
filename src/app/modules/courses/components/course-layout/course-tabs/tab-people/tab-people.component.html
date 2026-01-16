@@ -10,8 +10,19 @@
 
   <!-- Members Section -->
   <div class="people-section">
-    <div class="section-title" style="display: flex; align-items: center;">
-      Members
+    <div class="section-title" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span>Members</span>
+        @if(canEdit) {
+        <app-button 
+          variant="primary" 
+          label="Add Student"
+          (click)="openAddStudentDialog()"
+        >
+          <span class="material-symbols-outlined" style="margin-right: 0.25rem;">add</span>
+        </app-button>
+        }
+      </div>
       <span class="member-amount">
         {{ members.length }} member{{ members.length !== 1 ? 's' : '' }}
       </span>
