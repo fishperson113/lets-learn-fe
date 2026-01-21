@@ -6,9 +6,9 @@
     <sidebar-item [label]="'Calendar'" href="/calendar">
       <span class="material-symbols-outlined" icon> calendar_today </span>
     </sidebar-item>
-    <sidebar-item [label]="'Settings'" href="/settings">
+    <!-- <sidebar-item [label]="'Settings'" href="/settings">
       <span class="material-symbols-outlined" icon> settings </span>
-    </sidebar-item>
+    </sidebar-item> -->
   </sidebar-group>  
   <sidebar-item-collapse [label]="currentUser?.role === Role.STUDENT ? 'Enrolled' : 'Teaching'">
     <span class="material-symbols-outlined" icon> 
