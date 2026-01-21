@@ -47,9 +47,8 @@ export class CourseListComponent implements OnInit {
     if (user.role === Role.TEACHER) {
       res = await GetTeacherCourses(user.id);
     } else if (user.role === Role.STUDENT) {
-      // Only show private courses (enrolled courses) for students
-      const studentCourses = await GetStudentCourses(user.id);
-      res = studentCourses.filter(course => !course.isPublished);
+      res = await GetStudentCourses(user.id);
+      //res = studentCourses.filter(course => !course.isPublished);
     } else {
       res = await GetPublicCourses();
     }
