@@ -18,6 +18,7 @@ import { ComboboxOption } from './combobox.type';
   standalone: false,
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',
+  providers: [ComboboxService],
 })
 export class ComboboxComponent implements OnInit {
   @Input() form: FormGroup = new FormGroup({});
@@ -51,6 +52,14 @@ export class ComboboxComponent implements OnInit {
 
     this.comboboxService.isOpen$.subscribe((isOpen) => {
       this.isOpen = isOpen;
+    });
+
+    // Subscribe to form control value changes to update combobox when form.patchValue() is called
+    this.form.get(this.controlName)?.valueChanges.subscribe((value) => {
+      const option = this.findOptionByValue(value);
+      if (option && option.value !== this.selectedOption?.value) {
+        this.comboboxService.selectOption(option);
+      }
     });
   }
 

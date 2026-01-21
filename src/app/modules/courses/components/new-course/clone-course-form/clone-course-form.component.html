@@ -70,20 +70,22 @@
 
   <!-- Level -->
   <label for="level" class="input-label">Level</label>
-  <form-input
-    id="level"
+  <app-combobox
     [form]="form"
-    type="text"
     controlName="level"
-    placeholder="E.g. Beginner"
     [validationMessages]="{
       required: 'Course level is required'
     }"
+    [options]="[
+      { value: 'beginner', label: 'Beginner' },
+      { value: 'intermediate', label: 'Intermediate' },
+      { value: 'advanced', label: 'Advanced' }
+    ]"
   />
   <span class="description">What level is your course?</span>
 
   <!-- Visibility -->
-  <!-- <label for="visibility" class="input-label">Visibility</label>
+  <label for="visibility" class="input-label">Visibility</label>
   <app-combobox
     [form]="form"
     controlName="visibility"
@@ -101,7 +103,7 @@
     <span class="description">Only participants can access the course</span>
   } @else {
     <span class="description">Choose who can access your course</span>
-  } -->
+  }
 
   <app-button label="Clone Course" type="submit" [loading]="loading" />
 </form>

@@ -27,11 +27,11 @@ export const newCourseFormSchema: INewCourseFormSchema = {
     validators: [Validators.required, Validators.minLength(3)],
     nonNullable: true,
   }),
-  level: new FormControl('Beginner', {
+  level: new FormControl('beginner', {
     validators: [Validators.required],
     nonNullable: true,
   }),
-  visibility: new FormControl('0', {
+  visibility: new FormControl(null, {
     validators: [Validators.required],
     nonNullable: true,
   }),
@@ -78,30 +78,35 @@ export const newCourseFormControls: FormControlField[] = [
     id: 'level',
     label: 'Level',
     type: 'text',
-    componentType: 'input',
-    placeholder: 'E.g. Beginner',
+    componentType: 'select',
+    placeholder: 'Select level',
+    options: [
+      { value: 'beginner', label: 'Beginner' },
+      { value: 'intermediate', label: 'Intermediate' },
+      { value: 'advanced', label: 'Advanced' },
+    ],
     description: 'What level is your course?',
     validationMessages: {
       required: 'Course level is required',
     },
   },
-  // {
-  //   id: 'visibility',
-  //   label: 'Visibility',
-  //   type: 'select',
-  //   componentType: 'select',
-  //   placeholder: 'Select visibility',
-  //   options: [
-  //     { value: '1', label: 'Public' },
-  //     { value: '0', label: 'Private' },
-  //   ],
-  //   descriptionOnOption: {
-  //     default: 'Choose who can access your course',
-  //     '1': 'Anyone can access the course',
-  //     '0': 'Only participants can access the course',
-  //   },
-  //   validationMessages: {
-  //     required: 'Course visibility is required',
-  //   },
-  // },
+  {
+    id: 'visibility',
+    label: 'Visibility',
+    type: 'select',
+    componentType: 'select',
+    placeholder: 'Select visibility',
+    options: [
+      { value: '1', label: 'Public' },
+      { value: '0', label: 'Private' },
+    ],
+    descriptionOnOption: {
+      default: 'Choose who can access your course',
+      '1': 'Anyone can access the course',
+      '0': 'Only participants can access the course',
+    },
+    validationMessages: {
+      required: 'Course visibility is required',
+    },
+  },
 ];

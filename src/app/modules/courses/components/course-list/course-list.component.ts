@@ -47,9 +47,17 @@ export class CourseListComponent implements OnInit {
     if (user.role === Role.TEACHER) {
       res = await GetTeacherCourses(user.id);
     } else if (user.role === Role.STUDENT) {
-      // Only show private courses (enrolled courses) for students
-      const studentCourses = await GetStudentCourses(user.id);
-      res = studentCourses.filter(course => !course.isPublished);
+      // Get both enrolled courses and public courses for students
+      const [enrolledCourses, publicCourses] = await Promise.all([
+        GetStudentCourses(user.id),
+        GetPublicCourses()
+      ]);
+      
+      // Merge and remove duplicates (prioritize enrolled courses)
+      const enrolledIds = new Set(enrolledCourses.map(c => c.id));
+      const uniquePublicCourses = publicCourses.filter(c => !enrolledIds.has(c.id));
+      
+      res = [...enrolledCourses, ...uniquePublicCourses];
     } else {
       res = await GetPublicCourses();
     }
