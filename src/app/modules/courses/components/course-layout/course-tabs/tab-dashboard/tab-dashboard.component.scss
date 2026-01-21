@@ -187,9 +187,15 @@
   flex: 1 1 0%;
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
 }
 
 .month-combobox {
+  min-width: 140px;
+  max-width: 200px;
+}
+
+.export-button {
   min-width: 140px;
   max-width: 200px;
 }

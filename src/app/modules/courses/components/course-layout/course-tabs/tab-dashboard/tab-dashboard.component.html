@@ -32,6 +32,18 @@
           placeholder="Select month"
           (onSelect)="onMonthChange($event.value)"
         ></app-combobox>
+        <app-button
+          class="export-button"
+          label="Export Excel"
+          variant="secondary"
+          (onClick)="exportToExcel()"
+        />
+        <app-button
+          class="export-button"
+          label="Export PDF"
+          variant="secondary"
+          (onClick)="exportToPDF()"
+        />
       </div>
     </div>
 

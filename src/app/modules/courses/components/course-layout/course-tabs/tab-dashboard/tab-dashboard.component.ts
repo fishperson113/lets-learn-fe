@@ -14,6 +14,10 @@ import {
   QuizOverallReport,
   AssignmentOverallReport,
 } from '@shared/models/report';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'tab-dashboard',
@@ -357,5 +361,83 @@ export class TabDashboardComponent implements OnInit {
   get studentsC(): any[] {
     if (!this.quizReport) return [];
     return this.quizReport.studentWithMarkOver0.map((s) => s.student);
+  }
+
+  exportToExcel() {
+    const data = this.prepareExportData();
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Dashboard');
+    XLSX.writeFile(wb, `dashboard-${this.course.title}-${this.selectedMonthValue}.xlsx`);
+  }
+
+  async exportToPDF() {
+    const dashboardElement = document.querySelector('.dashboard-paper') as HTMLElement;
+    const exportButtons = document.querySelectorAll('.export-button');
+    
+    if (!dashboardElement) return;
+
+    // Hide export buttons
+    exportButtons.forEach(button => {
+      (button as HTMLElement).style.display = 'none';
+    });
+
+    try {
+      const canvas = await html2canvas(dashboardElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 295; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      
+      let position = 0;
+      
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      pdf.save(`dashboard-${this.course.title}-${this.selectedMonthValue}.pdf`);
+    } finally {
+      // Show export buttons again
+      exportButtons.forEach(button => {
+        (button as HTMLElement).style.display = '';
+      });
+    }
+  }
+
+  private prepareExportData(): any[] {
+    const data: any[] = [];
+    
+    if (this.selectedTab === 'quiz' && this.quizReport) {
+      data.push({ Section: 'Quiz Statistics' });
+      this.quizStats.forEach(stat => {
+        data.push({ Label: stat.label, Value: stat.value });
+      });
+      data.push({ Section: 'Student Rankings' });
+      this.studentsS.forEach(student => data.push({ Rank: 'S', Name: student.name, Email: student.email }));
+      this.studentsA.forEach(student => data.push({ Rank: 'A', Name: student.name, Email: student.email }));
+      this.studentsB.forEach(student => data.push({ Rank: 'B', Name: student.name, Email: student.email }));
+      this.studentsC.forEach(student => data.push({ Rank: 'C', Name: student.name, Email: student.email }));
+    } else if (this.selectedTab === 'assignments' && this.assignmentReport) {
+      data.push({ Section: 'Assignment Statistics' });
+      this.assignmentsStats.forEach(stat => {
+        data.push({ Label: stat.label, Value: stat.value });
+      });
+    }
+    
+    return data;
   }
 }
