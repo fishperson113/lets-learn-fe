@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CreateCourse } from '@modules/courses/api/courses.api';
-import { ComboboxService } from '@shared/components/combobox/combobox.service';
 import { ToastrService } from 'ngx-toastr';
 import {
   INewCourseFormData,
@@ -16,7 +15,6 @@ import {
   standalone: false,
   templateUrl: './new-course-form.component.html',
   styleUrl: './new-course-form.component.scss',
-  providers: [ComboboxService],
 })
 export class NewCourseFormComponent implements OnInit {
   showPassword = false;
@@ -28,15 +26,16 @@ export class NewCourseFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private comboboxService: ComboboxService,
     private toastService: ToastrService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group(newCourseFormSchema);
-    this.comboboxService.selectedOption$.subscribe((option) => {
-      this.visibilityValue = option?.value || 'default';
+    
+    // Subscribe to visibility form control changes
+    this.form.get('visibility')?.valueChanges.subscribe((value) => {
+      this.visibilityValue = value || 'default';
     });
   }
 

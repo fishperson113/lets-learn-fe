@@ -27,7 +27,7 @@ export const newCourseFormSchema: INewCourseFormSchema = {
     validators: [Validators.required, Validators.minLength(3)],
     nonNullable: true,
   }),
-  level: new FormControl('Beginner', {
+  level: new FormControl('beginner', {
     validators: [Validators.required],
     nonNullable: true,
   }),
@@ -78,8 +78,13 @@ export const newCourseFormControls: FormControlField[] = [
     id: 'level',
     label: 'Level',
     type: 'text',
-    componentType: 'input',
-    placeholder: 'E.g. Beginner',
+    componentType: 'select',
+    placeholder: 'Select level',
+    options: [
+      { value: 'beginner', label: 'Beginner' },
+      { value: 'intermediate', label: 'Intermediate' },
+      { value: 'advanced', label: 'Advanced' },
+    ],
     description: 'What level is your course?',
     validationMessages: {
       required: 'Course level is required',

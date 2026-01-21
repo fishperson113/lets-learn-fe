@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CloneCourse, GetTeacherCourses } from '@modules/courses/api/courses.api';
-import { ComboboxService } from '@shared/components/combobox/combobox.service';
 import { Course } from '@shared/models/course';
 import { UserService } from '@shared/services/user.service';
 import { ToastrService } from 'ngx-toastr';
@@ -21,7 +20,6 @@ interface CloneCourseFormSchema {
   standalone: false,
   templateUrl: './clone-course-form.component.html',
   styleUrl: './clone-course-form.component.scss',
-  providers: [ComboboxService],
 })
 export class CloneCourseFormComponent implements OnInit {
   form!: FormGroup;
@@ -35,8 +33,7 @@ export class CloneCourseFormComponent implements OnInit {
     private fb: FormBuilder,
     private toastService: ToastrService,
     private router: Router,
-    private userService: UserService,
-    private comboboxService: ComboboxService
+    private userService: UserService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -57,7 +54,7 @@ export class CloneCourseFormComponent implements OnInit {
         validators: [Validators.required, Validators.minLength(3)],
         nonNullable: true,
       }),
-      level: new FormControl('Beginner', {
+      level: new FormControl('beginner', {
         validators: [Validators.required],
         nonNullable: true,
       }),
@@ -67,8 +64,9 @@ export class CloneCourseFormComponent implements OnInit {
       }),
     });
 
-    this.comboboxService.selectedOption$.subscribe((option) => {
-      this.visibilityValue = option?.value || '0';
+    // Subscribe to visibility form control changes
+    this.form.get('visibility')?.valueChanges.subscribe((value) => {
+      this.visibilityValue = value || '0';
     });
 
     // Load teacher's courses
@@ -107,7 +105,7 @@ export class CloneCourseFormComponent implements OnInit {
       this.form.patchValue({
         title: `${course.title} (Copy)`,
         category: course.category,
-        level: course.level,
+        level: course.level?.toLowerCase() || 'beginner',
       });
     }
   }

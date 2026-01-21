@@ -70,15 +70,17 @@
 
   <!-- Level -->
   <label for="level" class="input-label">Level</label>
-  <form-input
-    id="level"
+  <app-combobox
     [form]="form"
-    type="text"
     controlName="level"
-    placeholder="E.g. Beginner"
     [validationMessages]="{
       required: 'Course level is required'
     }"
+    [options]="[
+      { value: 'beginner', label: 'Beginner' },
+      { value: 'intermediate', label: 'Intermediate' },
+      { value: 'advanced', label: 'Advanced' }
+    ]"
   />
   <span class="description">What level is your course?</span>
 
