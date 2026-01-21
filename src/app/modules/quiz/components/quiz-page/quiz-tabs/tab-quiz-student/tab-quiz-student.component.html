@@ -35,7 +35,7 @@
       <span class="setting-label">Grading method:</span>
       <span class="setting-value">{{ topic.data.gradingMethod }}</span>
     </div>
-    @if(fullMarkOfQuiz != 0){
+    @if(fullMarkOfQuiz != 0 && studentResponses && studentResponses.length > 0){
     <div class="setting-item">
       <span
         [class]="'setting-label ' + gradeColor"

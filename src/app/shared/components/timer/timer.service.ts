@@ -59,12 +59,15 @@ export class TimerService {
   startCountDown() {
     if (this.countDownSub) return;
     const from = this.countDownSubject.getValue();
-    this.countDownSub = interval(1000).subscribe((value) => {
-      if (value === 0) {
+    this.countDownSub = interval(1000).pipe(
+      map(value => from - value),
+      takeWhile(countDown => countDown >= 0, true)
+    ).subscribe((countDown) => {
+      if (countDown === from) {
         this.startTime = removeMilliseconds(new Date());
         console.log('start time', this.startTime);
       }
-      this.countDownSubject.next(from - value);
+      this.countDownSubject.next(countDown);
     });
   }
 

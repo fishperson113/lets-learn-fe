@@ -46,7 +46,13 @@ export class QuizAttemptingService {
     private studentResponseService: StudentResponseService,
     private timerService: TimerService,
     private toastService: ToastrService
-  ) {}
+  ) {
+    this.timerService.countDown$.subscribe((countDown) => {
+      if (countDown <= 0 && this.topicId) {
+        this.finishQuiz();
+      }
+    });
+  }
 
   startQuiz(topicId: string, countDown?: number) {
     this.timerService.setTimerType(countDown ? 'count-down' : 'count-up');
